@@ -1,7 +1,10 @@
 # AutoPrep -  Automated Preprocessing Pipeline with Univariate Anomaly Marking
 
 This pipeline focuses on data preprocessing, standardization, and cleaning, with additional features to identify univariate anomalies.
-<!-- <a href="https://html-preview.github.io/?url=https://github.com/JAdelhelm/Automated-Anomaly-Detection-Preprocessing-Pipeline/blob/main/visualization/Pipeline.html" target="_blank">Structure of Preprocessing Pipeline</a> -->
+
+<a href="https://html-preview.github.io/?url=https://github.com/JAdelhelm/AutoPrep/blob/main/visualization/PipelineDQ.html" target="_blank">Structure of Preprocessing Pipeline</a>
+
+
 
 ## Description
 The Automated Preprocessing Pipeline with Univariate Anomaly Marking saves time by providing robust preprocessing, standardization, and anomaly detection, ensuring high data quality and integrity for analysis and machine learning applications ✅.
