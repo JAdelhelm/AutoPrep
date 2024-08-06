@@ -13,16 +13,11 @@ The Automated Preprocessing Pipeline with Univariate Anomaly Marking saves time 
 To utilize this pipeline, you need to import the necessary libraries and initialize the AutoPrep pipeline. Here is a basic example:
 
 ````python
-import numpy as np
-import pandas as pd
-from sklearn import set_config
-set_config(transform_output="pandas")
-from pipelines.control import AutoPrep
-
 df_data = pd.read_csv("./temperature_USA.csv")
 
+from pipelines.control import AutoPrep
+pipeline = AutoPrep()
 
-pipeline = AutoPrep()    
 X_output = pipeline.preprocess(df=df_data)
 ````
 
