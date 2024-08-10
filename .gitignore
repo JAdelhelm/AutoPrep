@@ -1,0 +1,14 @@
+__pycache__/
+.idea/
+venv/
+.env
+tests
+
+# Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Sphinx
+docs/_build
