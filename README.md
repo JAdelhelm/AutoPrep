@@ -1,4 +1,10 @@
 # AutoPrep -  Automated Preprocessing Pipeline with Univariate Anomaly Marking
+![PyPIv](https://img.shields.io/pypi/v/AutoPrep)
+![PyPI status](https://img.shields.io/pypi/status/AutoPrep)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/AutoPrep) ![PyPI - License](https://img.shields.io/pypi/l/AutoPrep)
+<!-- [![Downloads](https://static.pepy.tech/badge/AutoPrep)](https://pepy.tech/project/AutoPrep) -->
+
+
 
 This pipeline focuses on data preprocessing, standardization, and cleaning, with additional features to identify univariate anomalies.
 <a href="https://html-preview.github.io/?url=https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/AutoPrep/visualization/PipelineDQ.html" target="_blank">Structure of Preprocessing Pipeline</a>
