@@ -4,8 +4,14 @@ This pipeline focuses on data preprocessing, standardization, and cleaning, with
 <!-- <a href="https://html-preview.github.io/?url=https://github.com/JAdelhelm/Automated-Anomaly-Detection-Preprocessing-Pipeline/blob/main/visualization/Pipeline.html" target="_blank">Structure of Preprocessing Pipeline</a> -->
 
 ```python
-pip install AutoPrep
+pip install AutoPrep==0.1
 ```
+#### Dependencies
+- scikit-learn
+- category_encoders
+- bitstring
+- ydata_profiling
+
 
 ## Basic Usage
 To utilize this pipeline, you need to import the necessary libraries and initialize the AutoPrep pipeline. Here is a basic example:

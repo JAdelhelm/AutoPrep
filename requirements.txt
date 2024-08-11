@@ -1,4 +1,6 @@
-# scikit-learn
-# category_encoders
-# bitstring
+scikit-learn
+category_encoders
+bitstring
+pandas
+numpy
 # ydata_profiling
