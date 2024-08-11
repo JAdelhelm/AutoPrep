@@ -5,8 +5,8 @@ authors = [
 ]
 description = "AutoPrep is an automated preprocessing pipeline with univariate anomaly marking"
 readme = "README.md"
-keywords = ["anomaly-detection", "preprocessing", "automated", "automated-preprocessing"]
-requires-python = ">=3.9"
+keywords = ["anomaly-detection", "preprocessing", "automated", "automated-preprocessing", "cleaning"]
+requires-python = ">=3.8"
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -23,18 +23,17 @@ dynamic = ["dependencies", "version"]
 
 
 [tool.setuptools.dynamic]
-version = {attr = "src.__version__"}
+version = {attr = "AutoPrep.__version__"}
 dependencies = {file = "requirements.txt"}
 
 [tool.setuptools]
-packages = ["src"]
-
-
+packages = ["AutoPrep"]
 
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
 
 [project.urls]
 Homepage = "https://github.com/JAdelhelm/AutoPrep"

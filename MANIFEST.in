@@ -1,0 +1,9 @@
+include AutoPrep/pipelines/*.py
+include AutoPrep/pipelines/preprocessing/*.py
+include AutoPrep/pipelines/preprocessing/dummy/*.py
+include AutoPrep/pipelines/preprocessing/engineering/*.py
+include AutoPrep/pipelines/preprocessing/estimator/*.py
+include AutoPrep/pipelines/preprocessing/nan_handling/*.py
+include AutoPrep/pipelines/preprocessing/statistical/*.py
+include AutoPrep/pipelines/preprocessing/timeseries/*.py
+include AutoPrep/visualization/*.py
