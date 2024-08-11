@@ -1,6 +1,6 @@
-numpy
-pandas
 scikit-learn
 category_encoders
 bitstring
-ydata_profiling
+pandas
+numpy
+# ydata_profiling

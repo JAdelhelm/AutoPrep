@@ -4,7 +4,7 @@ from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
-from sklearn import set_config
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -22,12 +22,23 @@ from joblib import dump
 import itertools
 from pathlib import Path
 
-from pipelines.runs import PipelineRuns
+# try:
+#     from .runs import PipelineRuns
+# except ImportError:
+#     from pipelines.runs import PipelineRuns
 
-try:  from pipelines.configuration_control import ConfigurationControl
-except: from configuration_control import ConfigurationControl
+# try:
+#     from .configuration_control import ConfigurationControl
+# except ImportError:
+#     from pipelines.configuration_control import ConfigurationControl
+from AutoPrep.pipelines.runs import PipelineRuns
+from AutoPrep.pipelines.configuration_control import ConfigurationControl
 
+
+
+from sklearn import set_config
 set_config(transform_output="pandas")
+
 
 class AutoPrep():
     """

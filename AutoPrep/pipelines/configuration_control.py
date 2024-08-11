@@ -22,7 +22,7 @@ from sklearn.utils import estimator_html_repr
 # Activate if you use PyTorch algorithms
 # import torch
 
-from pipelines.configuration import PipelinesConfiguration
+from AutoPrep.pipelines.configuration import PipelinesConfiguration
 
 
 
