@@ -12,3 +12,6 @@ dist/
 
 # Sphinx
 docs/_build
+
+# PyPi tutorial
+tutorial_pypi.txt

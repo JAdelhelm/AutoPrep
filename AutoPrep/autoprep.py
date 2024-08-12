@@ -21,7 +21,7 @@ from pathlib import Path
 
 
 try:
-    from AutoPrep.pipeline_configuration import ConfigurationControl
+    from AutoPrep.pipeline_control import PipelineControl
 except ImportError:
     from pipeline_control import PipelineControl
 # from pipeline_configuration import PipelinesConfiguration
