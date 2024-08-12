@@ -19,7 +19,7 @@ from autoprep import AutoPrep
 pipeline = AutoPrep(
     nominal_columns=["ID", "Name", "Is Manager"],
     datetime_columns=["Hire Date"],
-    # pattern_recognition_columns=["Name"]
+    pattern_recognition_columns=["Name"]
 
 )
 X_output = pipeline.preprocess(df=data)
