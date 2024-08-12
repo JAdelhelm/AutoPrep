@@ -75,12 +75,12 @@ Both methods (MOD Z-Value and Tukey Method) are resilient against outliers, ensu
 
 
 
-
-
-
-
-
 ---
+
+
+
+
+
 ## Pipeline - Built-in Logic
 <!-- ![Logic of Pipeline](./images/decision_rules.png) -->
 ![Logic of Pipeline](https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/images/decision_rules.png) 
@@ -89,9 +89,9 @@ Both methods (MOD Z-Value and Tukey Method) are resilient against outliers, ensu
 
 
 
-## Abstract View (Code Structure)
+<!-- ## Abstract View (Code Structure) -->
 <!-- ![Abstract view of the project](./images/project.png) -->
-![Abstract view of the project](https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/images/project.png)
+<!-- ![Abstract view of the project](https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/images/project.png) -->
 
 
 
@@ -110,6 +110,9 @@ Both methods (MOD Z-Value and Tukey Method) are resilient against outliers, ensu
 - I used sklearn's Pipeline and Transformer concept to create this preprocessing pipeline
     - Pipeline: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
     - Transformer: https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.html
+
+
+
 
 
 

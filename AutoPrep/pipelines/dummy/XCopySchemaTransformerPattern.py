@@ -35,8 +35,8 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     datetime_columns : list
         List of certain Time-Columns that should be converted in timestamp data types.
 
-    exclude_columns : list
-        List of Columns that will be dropped.
+    include_columns : list
+        List of Columns for pattern recognition.
 
     name_transformer : list
         Is used for the output, so the enduser can check what Columns are used for a certain Transformation.
@@ -44,11 +44,15 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, datetime_columns=None, exclude_columns: list = None, name_transformer=""
+        self, datetime_columns=None, include_columns = None, name_transformer=""
     ):
         self.datetime_columns = datetime_columns
+        self.include_columns = include_columns
 
-        self.exclude_columns = exclude_columns
+        if isinstance(self.include_columns, list) is False:
+            raise ValueError("Columns for pattern recognition has to be defined with pattern_recognition_columns!")
+
+
         self.feature_names = None
         self.name_transformer = name_transformer
 
@@ -101,8 +105,13 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        if self.exclude_columns is not None:
-            for col in self.exclude_columns:
+
+        all_columns = X.columns
+
+        exclude_columns = [col for col in all_columns if col not in self.include_columns]
+
+        if exclude_columns is not None:
+            for col in exclude_columns:
                 try:
                     X.drop([col], axis=1, inplace=True)
                 except:
@@ -131,7 +140,9 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     #     except: pass
 
 
-# Beispielverwendung
+### Test
+
+
 # data = pd.DataFrame({
 #     'evseid': [
 #         'IT*DUF*DAXS20*2', 'ANOMALY', 'RO*RNVED166*01*1', # evseid zweite Zeile
@@ -150,7 +161,7 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
 #         '2023-02-08T13:36:14.342Z', '2023-01-09T14:28:13.529Z', '2023-02-09T14:26:12.992Z',
 #         '2023-02-10T12:38:15.322Z', '2023-02-09T14:26:13.185Z', '2023-02-09T14:28:13.408Z' # Falsches Datum in zweiter Zeile
 #     ],
-#     'availability': ['OCCUPIED', 'OCCUPIED', 'OCCUPIED', 'AVAILABLE', 'OCCUPIED', 'OCCUPIED'],
+#     'availability': ['OCCUPIED', 'OCCUPIED', 'OCCUPIED', 'AVAILABLE', 'OCCUPIED', 'djfd21'],
 #     'timestamp': [
 #         '2023-02-09 15:38:14.954000+00:00', '2023-02-09 15:30:12.996000+00:00',
 #         '2023-02-09 14:28:13.381000+00:00', '2023-02-09 13:28:13.568000+00:00',
@@ -161,9 +172,10 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
 #     ]
 # })
 
+
 # preprocessor = make_pipeline(
 #             ColumnTransformer(transformers=[
-#                 ("XCopy", XCopySchemaTransformer(), make_column_selector(dtype_include=None))
+#                 ("XCopy", XCopySchemaTransformerPattern(include_columns=["availability"]), make_column_selector(dtype_include=None))
 #             ], remainder="passthrough", n_jobs=-1),
 #             ColumnTransformer(transformers=[
 #                 ("C_imputed", SimpleImputer(strategy="most_frequent", missing_values=np.nan), make_column_selector(dtype_include=np.object_)),
