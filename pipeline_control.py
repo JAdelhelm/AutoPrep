@@ -21,12 +21,14 @@ from sklearn.utils import estimator_html_repr
 
 # Activate if you use PyTorch algorithms
 # import torch
+try:
+    from AutoPrep.pipeline_configuration import PipelinesConfiguration
+except ImportError:
+    from pipeline_configuration import PipelinesConfiguration
 
-from AutoPrep.pipelines.configuration import PipelinesConfiguration
 
 
-
-class ConfigurationControl(PipelinesConfiguration):
+class PipelineControl(PipelinesConfiguration):
     """
     The ConfigurationControl class extends PipelinesConfiguration and manages the configuration 
     of preprocessing pipelines for anomaly detection.
@@ -42,14 +44,12 @@ class ConfigurationControl(PipelinesConfiguration):
     ordinal_columns : list, optional
         Columns that should be transformed to ordinal data types. Default is None.
 
-    pattern_recognition_exclude_columns : list, optional
-        List of columns to be excluded from pattern recognition. Default is None.
+    pattern_recognition_columns : list, optional
+        List of columns to be included from pattern recognition. 
 
     exclude_columns : list, optional
         List of columns to be dropped from the dataset. Default is None.
 
-    deactivate_pattern_recognition : bool, optional
-        If set to True, the pattern recognition transformer will be deactivated. Default is False.
 
     Methods
     -------
@@ -64,17 +64,15 @@ class ConfigurationControl(PipelinesConfiguration):
         datetime_columns: list = None,
         nominal_columns: list = None,
         ordinal_columns: list = None,
-        pattern_recognition_exclude_columns: list = None,
+        pattern_recognition_columns: list = None,
         exclude_columns: list = None,
-        deactivate_pattern_recognition: bool = False
                  ) -> None:
         super().__init__()
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
         self.ordinal_columns = ordinal_columns
         self.exclude_columns = exclude_columns
-        self.pattern_recognition_exclude_columns = pattern_recognition_exclude_columns
-        self.deactivate_pattern_recognition = deactivate_pattern_recognition
+        self.pattern_recognition_columns = pattern_recognition_columns
 
     def standard_pipeline_configuration(self):
         """
@@ -175,9 +173,8 @@ class ConfigurationControl(PipelinesConfiguration):
                                 (
                                     "Categorical_PatternExtraction",
                                     super().pattern_extraction(
-                                        pattern_recognition_exclude_columns=self.pattern_recognition_exclude_columns,
+                                        pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
-                                        deactivate_pattern_recognition=self.deactivate_pattern_recognition,
                                     ),
                                     make_column_selector(dtype_include=np.object_),
                                 ),
@@ -231,9 +228,8 @@ class ConfigurationControl(PipelinesConfiguration):
                                 (
                                     "Categorical_PatternExtraction",
                                     super().pattern_extraction(
-                                        pattern_recognition_exclude_columns=self.pattern_recognition_exclude_columns,
+                                        pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
-                                        deactivate_pattern_recognition=self.deactivate_pattern_recognition,
                                     ),
                                     make_column_selector(dtype_include=np.object_),
                                 ),
@@ -281,9 +277,8 @@ class ConfigurationControl(PipelinesConfiguration):
                                 (
                                     "Categorical_PatternExtraction",
                                     super().pattern_extraction(
-                                        pattern_recognition_exclude_columns=self.pattern_recognition_exclude_columns,
+                                        pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
-                                        deactivate_pattern_recognition=self.deactivate_pattern_recognition,
                                     ),
                                     make_column_selector(dtype_include=np.object_),
                                 ),
@@ -331,9 +326,8 @@ class ConfigurationControl(PipelinesConfiguration):
                                 (
                                     "Categorical_PatternExtraction",
                                     super().pattern_extraction(
-                                        pattern_recognition_exclude_columns=self.pattern_recognition_exclude_columns,
+                                        pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
-                                        deactivate_pattern_recognition=self.deactivate_pattern_recognition,
                                     ),
                                     make_column_selector(dtype_include=np.object_),
                                 ),

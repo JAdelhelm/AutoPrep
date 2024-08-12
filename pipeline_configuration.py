@@ -6,7 +6,7 @@ and configure pipelines for preprocessing numerical, categorical, timeseries, an
 
 Classes:
     PipelinesConfiguration: Configures pipelines for preprocessing different types of data.
-    columnDropperTransformer: Drops specified columns from the data.
+    XPatternDropper: Drops specified columns from the data.
 
 Imports:
     numpy as np
@@ -16,20 +16,39 @@ Imports:
 
 import numpy as np
 import pandas as pd
-from AutoPrep.pipelines.preprocessing.statistical.TukeyTransformer import TukeyTransformer
-from AutoPrep.pipelines.preprocessing.statistical.TukeyTransformerTotal import TukeyTransformerTotal
-from AutoPrep.pipelines.preprocessing.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
-from AutoPrep.pipelines.preprocessing.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
-from AutoPrep.pipelines.preprocessing.statistical.SpearmanCheck import SpearmanCorrelationCheck
-from AutoPrep.pipelines.preprocessing.engineering.CategoricalPatterns import CategoricalPatterns
-from AutoPrep.pipelines.preprocessing.dummy.XCopySchemaTransformer import XCopySchemaTransformer
-from AutoPrep.pipelines.preprocessing.dummy.XCopySchemaTransformerNominal import XCopySchemaTransformerNominal
-from AutoPrep.pipelines.preprocessing.dummy.XCopySchemaTransformerOrdinal import XCopySchemaTransformerOrdinal
-from AutoPrep.pipelines.preprocessing.dummy.XCopySchemaTransformerPattern import XCopySchemaTransformerPattern
-from AutoPrep.pipelines.preprocessing.timeseries.DateEncoder import DateEncoder
-from AutoPrep.pipelines.preprocessing.timeseries.TimeSeriesImputer import TimeSeriesImputer
-from AutoPrep.pipelines.preprocessing.nan_handling.NaNColumnCreator import NaNColumnCreator
-from AutoPrep.pipelines.preprocessing.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
+try:
+    from AutoPrep.pipelines.statistical.TukeyTransformer import TukeyTransformer
+    from AutoPrep.pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
+    from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
+    from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
+    from AutoPrep.pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
+    from AutoPrep.pipelines.engineering.CategoricalPatterns import CategoricalPatterns
+    from AutoPrep.pipelines.dummy.XCopySchemaTransformer import XCopySchemaTransformer
+    from AutoPrep.pipelines.dummy.XCopySchemaTransformerNominal import XCopySchemaTransformerNominal
+    from AutoPrep.pipelines.dummy.XCopySchemaTransformerOrdinal import XCopySchemaTransformerOrdinal
+    from AutoPrep.pipelines.dummy.XCopySchemaTransformerPattern import XCopySchemaTransformerPattern
+    from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
+    from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
+    from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
+    from AutoPrep.pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
+except ImportError:
+    from pipelines.statistical.TukeyTransformer import TukeyTransformer
+    from pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
+    from pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
+    from pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
+    from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
+    from pipelines.engineering.CategoricalPatterns import CategoricalPatterns
+    from pipelines.dummy.XCopySchemaTransformer import XCopySchemaTransformer
+    from pipelines.dummy.XCopySchemaTransformerNominal import XCopySchemaTransformerNominal
+    from pipelines.dummy.XCopySchemaTransformerOrdinal import XCopySchemaTransformerOrdinal
+    from pipelines.dummy.XCopySchemaTransformerPattern import XCopySchemaTransformerPattern
+    from pipelines.timeseries.DateEncoder import DateEncoder
+    from pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
+    from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
+    from pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
+
+
+
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer, MissingIndicator
 from sklearn.pipeline import make_pipeline, Pipeline
@@ -69,7 +88,7 @@ class PipelinesConfiguration():
     timeseries_pipeline():
         Creates a pipeline for preprocessing timeseries data.
 
-    pattern_extraction(pattern_recognition_exclude_columns=None, datetime_columns_pattern=None, deactivate_pattern_recognition=False):
+    pattern_extraction(pattern_recognition_columns=None, datetime_columns_pattern=None, deactivate_pattern_recognition=False):
         Creates a pipeline to extract patterns from categorical data.
 
     nominal_pipeline(nominal_columns=None, datetime_columns=None):
@@ -92,6 +111,7 @@ class PipelinesConfiguration():
     def __init__(self):
         self.exclude_columns = None
         self.datetime_columns = None
+        self.include_columns = None
 
     def pre_pipeline(self, datetime_columns=None, exclude_columns=None):
         self.exclude_columns = exclude_columns
@@ -346,44 +366,44 @@ class PipelinesConfiguration():
 
     def pattern_extraction(
         self,
-        pattern_recognition_exclude_columns: list = None,
-        datetime_columns_pattern: list = None,
-        deactivate_pattern_recognition: bool = False,
+        pattern_recognition_columns: list = None,
+        datetime_columns_pattern = None
     ):
-        if deactivate_pattern_recognition is True:
-            return    Pipeline(
-            steps=[
-                (
-                    "PatternRecognition Deactivated",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "drop_columns",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "DropColumns", columnDropperTransformer(),
-                                        ),
-                                    ]
+        if pattern_recognition_columns is None:
+            return  Pipeline(
+                steps=[
+                    (
+                        "PatternRecognition Deactivated",
+                        ColumnTransformer(
+                            transformers=[
+                                (
+                                    "drop_columns",
+                                    Pipeline(
+                                        steps=[
+                                            (
+                                                "DropColumns", XPatternDropper(),
+                                            ),
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=None),
                                 ),
-                                make_column_selector(dtype_include=None),
-                            ),
-                        ],
-                        remainder="drop",
-                        n_jobs=-1,
-                        verbose=True,
-                    ),
-                )
-            ]
-        )
+                            ],
+                            remainder="drop",
+                            n_jobs=-1,
+                            verbose=True,
+                        ),
+                    )
+                ]
+            )
   
-        elif pattern_recognition_exclude_columns is not None:
+        elif pattern_recognition_columns is not None:
+
             return Pipeline(
                 steps=[
                     (
                         "X_pattern",
                         XCopySchemaTransformerPattern(
-                            exclude_columns=pattern_recognition_exclude_columns,
+                            include_columns=pattern_recognition_columns,
                             datetime_columns=datetime_columns_pattern,
                             name_transformer="Schema PatternExtraction",
                         ),
@@ -420,7 +440,6 @@ class PipelinesConfiguration():
                     ),
                 ]
             )
-
         else:
             return Pipeline(
                 steps=[
@@ -462,6 +481,7 @@ class PipelinesConfiguration():
                     ),
                 ]
             )
+
 
     def nominal_pipeline(
         self,
@@ -568,55 +588,16 @@ class PipelinesConfiguration():
             profile.to_file("DQ_report_deep.html")
 
 
-class columnDropperTransformer:
-    def __init__(self, exclude_columns):
-        """
-        Es wird eine Rückgabe eines DataFrames von mindestens 1 Spalte erwartet.
-        Aus diesem Grund werden die verworfenen Spalten mit 0 befüllt.
-        """
-        self.exclude_columns = exclude_columns
-        self.feature_names = None
+    
+class XPatternDropper():
+    def __init__(self):
+        pass
 
     def fit(self, X, y=None):
         return self
-
-    def transform(self, X, y=None):
-        """
-        Falls ein DataFrame nur eine Spalte enthält, dann
-        wird diese mit 0'en befüllt und zurückgegeben.
-        """
-
-        if self.exclude_columns is None:
-            return X
-
-        X_dropped = X.copy()
-        columns_to_drop = []
-        for exclude_column in self.exclude_columns:
-            columns_to_drop.extend([col for col in X.columns if exclude_column in col])
-
-        X_dropped = X.drop(columns_to_drop, axis=1)
-
-        if X_dropped.empty:
-            print(
-                f"""\nYou drop all columns of dtype: {X.iloc[:,0].dtypes}
--> Only NaN-values of this columns will be marked.\n"""
-            )
-
-            X_dropped = X.copy()
-            X_dropped[:] = 0
-
-        return X_dropped
-
-    # def get_feature_names(self, input_features=None):
-    #     return self.feature_names
-    
-class columnDropperTransformer():
-    def __init__(self):
-        pass
 
     def transform(self, X, y=None):
         return X[[]]
 
-    def fit(self, X, y=None):
-        return self
+
  
