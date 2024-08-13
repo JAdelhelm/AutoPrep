@@ -96,12 +96,12 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
         return self.new_feature_names
 
 
-test_daten = pd.DataFrame(
-    {
-        "COLTestCAT1": np.array(["Hund","Hund", "Hund123", "hund"]),
-        "COLTestCAT2": np.array(["K*atze","K*atze", np.nan, "Hund$"])
+# test_daten = pd.DataFrame(
+#     {
+#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123", "hund"]),
+#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan, "Hund$"])
         # "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-    })
+    # })
 
 # from category_encoders import BinaryEncoder
 # from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
