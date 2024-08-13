@@ -89,7 +89,6 @@ class AutoPrep():
             self, 
             df: pd.DataFrame
     ) -> pd.DataFrame:
-        df = self.check_index(df = df)
 
         self._df = df.copy()
 
@@ -106,22 +105,6 @@ class AutoPrep():
         )
 
         return self._df_preprocessed
-
-        
-    def check_index(self, df):
-        from pandas import Index
-        if isinstance(df.index, Index) is True:
-            print(f"Found Index Datatype in Dataframe:\n\n{df.index}")
-            print("\n\nIndex will be converted to RangeIndex.\n\n")
-            df_new_index = df.reset_index()
-            print(df_new_index.index)
-            
-            return df_new_index
-        else:
-            print("Correct Index found for Dataframe...")
-            return df
-
-
 
 
 

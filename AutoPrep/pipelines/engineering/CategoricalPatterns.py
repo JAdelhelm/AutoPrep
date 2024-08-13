@@ -79,6 +79,10 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
             # X_Transformed[col + "_unique"] = count_unique
 
         self.new_feature_names = X_Transformed.columns
+        
+        if X_Transformed.columns.duplicated().any():
+            raise ValueError("Duplicate columns found in X_Transformed")
+        
 
         return X_Transformed
 
@@ -89,7 +93,9 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
         if X.eq(0).all().all():
             return X
         else:
-            return self.extract_patterns(X)
+            transformed = self.extract_patterns(X)
+            transformed.index = X.index
+            return transformed
 
     def get_feature_names(self, input_features=None):
         # Rückgabe der Featurenamen
@@ -98,10 +104,19 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
 
 # test_daten = pd.DataFrame(
 #     {
-#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123", "hund"]),
-#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan, "Hund$"])
-        # "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-    # })
+#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
+#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
+#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
+#     })
+
+# train_daten = pd.DataFrame(
+#     {
+#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
+#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
+#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
+#     })
+
+# df = pd.concat([test_daten, train_daten])
 
 # from category_encoders import BinaryEncoder
 # from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
@@ -113,7 +128,7 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
 #          ("pattern",
 #           Pipeline(
 #               steps=[
-#                          # ("C", SimpleImputer(strategy="most_frequent")),
+#                          ("C", SimpleImputer(strategy="most_frequent")),
 #                          # ("OHE", OneHotEncoder(handle_unknown="ignore",sparse=False)),
 #                          # ("OrdinalEnc",OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)),
 #                         ("Pattern", CategoricalPatterns()),
@@ -126,7 +141,7 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
 # ])
 
 
-# preprocessed_data = preprocessing.fit_transform(test_daten)
+# preprocessed_data = preprocessing.fit_transform(df)
 # preprocessed_data
 
 # %%
