@@ -395,8 +395,9 @@ class PipelinesConfiguration():
                     )
                 ]
             )
-  
-        elif pattern_recognition_columns is not None:
+        
+        else:
+        # elif pattern_recognition_columns is not None:
 
             return Pipeline(
                 steps=[
@@ -440,47 +441,7 @@ class PipelinesConfiguration():
                     ),
                 ]
             )
-        else:
-            return Pipeline(
-                steps=[
-                    (
-                        "X_pattern",
-                        XCopySchemaTransformerPattern(
-                            datetime_columns=datetime_columns_pattern
-                        ),
-                    ),
-                    (
-                        "pattern_processing",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "pattern_processing_inner",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "impute_pattern",
-                                                SimpleImputer(strategy="most_frequent"),
-                                            ),
-                                            (
-                                                "pattern_extraction",
-                                                CategoricalPatterns(),
-                                            ),
-                                            (
-                                                "BinaryEnc",
-                                                BinaryEncoder(
-                                                    handle_unknown="indicator"
-                                                ),
-                                            ),
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.object_),
-                                )
-                            ],
-                            remainder="drop",
-                        ),
-                    ),
-                ]
-            )
+
 
 
     def nominal_pipeline(

@@ -48,13 +48,11 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     ):
         self.datetime_columns = datetime_columns
         self.include_columns = include_columns
+        self.feature_names = None
+        self.name_transformer = name_transformer
 
         if isinstance(self.include_columns, list) is False:
             raise ValueError("Columns for pattern recognition has to be defined with pattern_recognition_columns!")
-
-
-        self.feature_names = None
-        self.name_transformer = name_transformer
 
     def convert_schema_nans(self, X):
         X_Copy = X.copy()
@@ -106,14 +104,16 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
 
     def transform(self, X) -> pd.DataFrame:
 
-        all_columns = X.columns
+        all_columns = X.columns.tolist()
 
         exclude_columns = [col for col in all_columns if col not in self.include_columns]
 
         if exclude_columns is not None:
             for col in exclude_columns:
                 try:
-                    X.drop([col], axis=1, inplace=True)
+                    # X.drop([col], axis=1, inplace=True)
+                    X = X.drop(columns=exclude_columns, axis=1)
+
                 except:
                     print(f"Column {col} could not be dropped.")
 
@@ -142,36 +142,21 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
 
 ### Test
 
+# test_daten = pd.DataFrame(
+#     {
+#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
+#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
+#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
+#     })
 
-# data = pd.DataFrame({
-#     'evseid': [
-#         'IT*DUF*DAXS20*2', 'ANOMALY', 'RO*RNVED166*01*1', # evseid zweite Zeile
-#         'SE*CLE*E20665*1', 'SE*CLE*E2349*1', 'PT*HRZ*E*PRT*00123*02'
-#     ],
-#     'locationId': [196133.0, 224509.0, -9999.0, 225551.0, 148382.0, 228302.0], # locationId 3 Zeile
-#     'uuid': [
-#         'INVALID_UUID', # Anomalous uuid in first row
-#         'd08f6f93-cea0-4a6f-a067-de6612e443b7', '69bf02ba-8530-4352-a6b1-31ae9f8c570e',
-#         'b755e455-2bff-42d7-83c9-c4f1d37ba5b3', 'c2621085-7f31-4c64-bf8a-b632ecee0fa3',
-#         'be999c75-71bf-4b68-906e-31ea42a3a824'
-#     ],
-#     'platform': ['HUBJECT', 'ANOMALY_PLATFORM', 'HUBJECT', 'HUBJECT', 'ANOMALY_PLATFORM', 'HUBJECT'], # Platform in zweiter und vierter Zeile
-#     'oldAvailability': ['AVAILABLE', 'AVLAILABLE', 'AVAILABLE', 'OCCUPIED', 'AVAILABLE', 'AVAILABLE'], # Zweite Zeile falsch geschrieben
-#     'oldTimestamp': [
-#         '2023-02-08T13:36:14.342Z', '2023-01-09T14:28:13.529Z', '2023-02-09T14:26:12.992Z',
-#         '2023-02-10T12:38:15.322Z', '2023-02-09T14:26:13.185Z', '2023-02-09T14:28:13.408Z' # Falsches Datum in zweiter Zeile
-#     ],
-#     'availability': ['OCCUPIED', 'OCCUPIED', 'OCCUPIED', 'AVAILABLE', 'OCCUPIED', 'djfd21'],
-#     'timestamp': [
-#         '2023-02-09 15:38:14.954000+00:00', '2023-02-09 15:30:12.996000+00:00',
-#         '2023-02-09 14:28:13.381000+00:00', '2023-02-09 13:28:13.568000+00:00',
-#         '2023-02-09 15:32:14.362000+00:00', '2022-02-08 14:30:16.858000+00:00' # Falscher Zeitstempel in letzter Zeile Monat
-#     ],
-#         'y_true': [
-#         1, 1, 1, 0, 1, 1
-#     ]
-# })
+# train_daten = pd.DataFrame(
+#     {
+#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
+#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
+#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
+#     })
 
+# df = pd.concat([test_daten, train_daten])
 
 # preprocessor = make_pipeline(
 #             ColumnTransformer(transformers=[
@@ -183,4 +168,4 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
 #             ], remainder="passthrough", n_jobs=-1)
 #             )
 
-# transformed_data = preprocessor.fit_transform(data)
+# transformed_data = preprocessor.fit_transform(df)
