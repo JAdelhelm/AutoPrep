@@ -95,7 +95,7 @@ class PipelineControl(PipelinesConfiguration):
                     ColumnTransformer(
                         transformers=[
                             (
-                                "X",
+                                "",
                                 super().pre_pipeline(
                                     datetime_columns=self.datetime_columns,
                                     exclude_columns=self.exclude_columns,
@@ -112,17 +112,17 @@ class PipelineControl(PipelinesConfiguration):
                     ColumnTransformer(
                         transformers=[
                             (
-                                "Numerical",
+                                "numerical",
                                 super().numeric_pipeline(),
                                 make_column_selector(dtype_include=np.number),
                             ),
                             (
-                                "Categorical",
+                                "categorical",
                                 super().categorical_pipeline(),
                                 make_column_selector(dtype_include=np.object_),
                             ),
                             (
-                                "Datetime",
+                                "date",
                                 super().timeseries_pipeline(),
                                 make_column_selector(
                                     dtype_include=(
@@ -165,17 +165,17 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -206,31 +206,31 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Nominal Columns",
+                                    "Nominal",
                                     super().nominal_pipeline(
                                         nominal_columns=self.nominal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Ordinal Columns",
+                                    "Ordinal",
                                     super().ordinal_pipeline(
                                         ordinal_columns=self.ordinal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -261,25 +261,25 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Nominal Columns",
+                                    "Nominal",
                                     super().nominal_pipeline(
                                         nominal_columns=self.nominal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
-                                # ("Ordinal Columns",super().ordinal_pipeline(ordinal_columns=self.ordinal_columns),make_column_selector(dtype_include=None)),
+                                # ("Ordinal",super().ordinal_pipeline(ordinal_columns=self.ordinal_columns),make_column_selector(dtype_include=None)),
                                 # (
                                 #     "NaNMarker Pipeline",
                                 #     super().nan_marker_pipeline(),
                                 #     make_column_selector(dtype_include=None),
                                 # ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -310,24 +310,24 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Ordinal Columns",
+                                    "Ordinal",
                                     super().ordinal_pipeline(
                                         ordinal_columns=self.ordinal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,

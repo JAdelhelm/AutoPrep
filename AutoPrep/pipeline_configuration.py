@@ -126,7 +126,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "X",
+                                "",
                                 TypeInferenceTransformer(
                                     datetime_columns=self.datetime_columns,
                                     exclude_columns=self.exclude_columns,
@@ -231,7 +231,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "stat_tukey",
+                                "tukey",
                                 Pipeline(
                                     steps=[
                                         # ("Z-Transformation", StandardScaler().set_output(transform="pandas")),
@@ -416,7 +416,7 @@ class PipelinesConfiguration():
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "pattern_processing_inner",
+                                    "processing",
                                     Pipeline(
                                         steps=[
                                             (
@@ -466,7 +466,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "nominal_processing_inner",
+                                "processing",
                                 Pipeline(
                                     steps=[
                                         (
@@ -511,7 +511,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "ordinal_processing_inner",
+                                "processing",
                                 Pipeline(
                                     steps=[
                                         (
