@@ -15,3 +15,6 @@ docs/_build
 
 # PyPi tutorial
 tutorial_pypi.txt
+
+/AutoPrep/DQ_report.html
+/AutoPrep/tests

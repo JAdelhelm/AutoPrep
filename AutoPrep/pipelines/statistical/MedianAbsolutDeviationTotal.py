@@ -40,31 +40,3 @@ class MedianAbsolutDeviationTotal(BaseEstimator, TransformerMixin):
         return self.z_names
 
 
-# Funktioniert
-# from sklearn.pipeline import Pipeline
-# from sklearn.compose import make_column_transformer
-# from MedianAbsolutDeviation import *
-
-
-# numeric_pipeline = Pipeline(steps=[
-#     ("z", MedianAbsolutDeviation(threshold=3.5, z_scores_output=False)),
-#     # ("iterative_num", IterativeImputer()),
-#     ("z_total", MedianAbsolutDeviationTotal())
-#     # ("impute_num", SimpleImputer(strategy="median"))
-# ])
-# numeric_preprocessor = ColumnTransformer(
-#     transformers=[
-#         ('Preprocessing_Numerical', numeric_pipeline, make_column_selector(dtype_include=np.number))
-#     ],
-#     remainder='passthrough',
-#     n_jobs=-1,
-#     verbose=True
-# )
-
-# test_values_1 = np.array([1,2,3,4,5,6,1000])
-# test_values_2 = np.array([1,2,3,4,50,700,1000])
-# test_data = pd.DataFrame({"Example_column_1":test_values_1, "Example_column_2":test_values_2})
-
-# preprocessed_data = pd.DataFrame(numeric_preprocessor.fit_transform(test_data), columns=numeric_preprocessor.get_feature_names_out())
-# pd.concat([preprocessed_data, pd.DataFrame({"Example_column_1":test_values_1, "Example_column_2":test_values_2})],axis=1)
-# %%

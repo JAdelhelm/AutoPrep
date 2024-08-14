@@ -81,6 +81,8 @@ class PipelineControl(PipelinesConfiguration):
         The pipeline includes profiling, datatype transformation, and preprocessing steps
         for categorical, numerical, and timeseries data.
 
+        The make_column_selector is set to None to include all incoming data.
+
         Returns
         -------
         Pipeline
@@ -147,6 +149,8 @@ class PipelineControl(PipelinesConfiguration):
         additional steps for handling nominal and ordinal columns, NaN marker,
         and pattern extraction based on the provided settings.
 
+        If no column names have been specified, the standard configuration of the pipeline is used.
+
         Returns
         -------
         Pipeline
@@ -198,7 +202,7 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with nominal and ordinal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
@@ -242,7 +246,7 @@ class PipelineControl(PipelinesConfiguration):
                 ]
             )
 
-        elif self.ordinal_columns is None and self.nominal_columns is not None:
+        elif self.nominal_columns is not None and self.ordinal_columns is None:
             if self.exclude_columns is None:
                 self.exclude_columns = self.nominal_columns
             else:
@@ -253,7 +257,7 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with nominal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
@@ -302,7 +306,7 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with ordinal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
@@ -310,7 +314,6 @@ class PipelineControl(PipelinesConfiguration):
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
-                                # ("Nominal Columns",super().nominal_pipeline(nominal_columns=self.nominal_columns),make_column_selector(dtype_include=None)),
                                 (
                                     "Ordinal Columns",
                                     super().ordinal_pipeline(

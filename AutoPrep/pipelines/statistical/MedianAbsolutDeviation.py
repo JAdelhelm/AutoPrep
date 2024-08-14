@@ -66,23 +66,3 @@ class MedianAbsolutDeviation(BaseEstimator, TransformerMixin):
 
 
 
-# if __name__ == "__main__":
-#     preprocessing = ColumnTransformer(
-#         [
-#             # ("cat", prep_cat, make_column_selector(dtype_include=np.object_)),
-#             # ("num", prep_num, make_column_selector(dtype_include=np.number)),
-#         ("z", MedianAbsolutDeviation(threshold=3.5, mad_scores_output=True), make_column_selector(dtype_include=np.number))    ],
-#         remainder='passthrough' # this will pass through any columns not specified in the transformers
-#     )
-
-#     train_data = pd.DataFrame({"Example_column": np.array([1,2,3,4,5])})
-#     test_data = pd.DataFrame({"Example_column":[3,1000]})
-
-#     preprocessing.fit(train_data)
-
-#     preprocessed_data = preprocessing.transform(test_data)
-#     print(preprocessed_data)
-
-
-
-# %%

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.utils.validation import check_array, check_is_fitted
 
 import warnings
 
@@ -17,7 +18,7 @@ from sklearn import set_config
 set_config(transform_output="pandas")
 
 
-class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
+class TypeInferenceTransformerOrdinal(BaseEstimator, TransformerMixin):
     """
     SchemaTransformer for a certain Pandas DataFrame input.
 
@@ -35,24 +36,30 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     datetime_columns : list
         List of certain Time-Columns that should be converted in timestamp data types.
 
-    include_columns : list
-        List of Columns for pattern recognition.
+    exclude_columns : list
+        List of Columns that will be dropped.
 
     name_transformer : list
         Is used for the output, so the enduser can check what Columns are used for a certain Transformation.
 
+    ordinal_columns : list
+        Only ordinal_columns will be transformed.
+
     """
 
     def __init__(
-        self, datetime_columns=None, include_columns = None, name_transformer=""
+        self,
+        datetime_columns=None,
+        exclude_columns: list = None,
+        ordinal_columns: list = None,
+        name_transformer="",
     ):
         self.datetime_columns = datetime_columns
-        self.include_columns = include_columns
+        self.ordinal_columns = ordinal_columns
+
+        self.exclude_columns = exclude_columns
         self.feature_names = None
         self.name_transformer = name_transformer
-
-        if isinstance(self.include_columns, list) is False:
-            raise ValueError("Columns for pattern recognition has to be defined with pattern_recognition_columns!")
 
     def convert_schema_nans(self, X):
         X_Copy = X.copy()
@@ -103,17 +110,13 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
+        
+        X = X[self.ordinal_columns]
 
-        all_columns = X.columns.tolist()
-
-        exclude_columns = [col for col in all_columns if col not in self.include_columns]
-
-        if exclude_columns is not None:
-            for col in exclude_columns:
+        if self.exclude_columns is not None:
+            for col in self.exclude_columns:
                 try:
-                    # X.drop([col], axis=1, inplace=True)
-                    X = X.drop(columns=exclude_columns, axis=1)
-
+                    X.drop([col], axis=1, inplace=True)
                 except:
                     print(f"Column {col} could not be dropped.")
 
@@ -132,40 +135,5 @@ class XCopySchemaTransformerPattern(BaseEstimator, TransformerMixin):
     def get_feature_names(self, input_features=None):
         return self.feature_names
 
-    # def convert_column_to_naive_timestamp(self, X, column_name):
-    #     """
-    #     Konvertieren einer 'datetime64[ns, UTC]' Spalte zu 'datetime64[ns]'
-    #     """
-    #     try: return X[column_name].dt.tz_convert(None)
-    #     except: pass
 
 
-### Test
-
-# test_daten = pd.DataFrame(
-#     {
-#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
-#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
-#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-#     })
-
-# train_daten = pd.DataFrame(
-#     {
-#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
-#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
-#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-#     })
-
-# df = pd.concat([test_daten, train_daten])
-
-# preprocessor = make_pipeline(
-#             ColumnTransformer(transformers=[
-#                 ("XCopy", XCopySchemaTransformerPattern(include_columns=["availability"]), make_column_selector(dtype_include=None))
-#             ], remainder="passthrough", n_jobs=-1),
-#             ColumnTransformer(transformers=[
-#                 ("C_imputed", SimpleImputer(strategy="most_frequent", missing_values=np.nan), make_column_selector(dtype_include=np.object_)),
-#                 ("N_imputed", SimpleImputer(strategy="median"), make_column_selector(dtype_include=np.number)),
-#             ], remainder="passthrough", n_jobs=-1)
-#             )
-
-# transformed_data = preprocessor.fit_transform(df)

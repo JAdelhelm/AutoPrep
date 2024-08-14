@@ -19,7 +19,7 @@ from sklearn import set_config
 set_config(transform_output="pandas")
 
 
-class CategoricalPatterns(BaseEstimator, TransformerMixin):
+class BinaryPatternTransformer(BaseEstimator, TransformerMixin):
     """
     PatternTransformer to extract certain patterns from categorical data.
 
@@ -66,10 +66,8 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
                         str_w_encoded.append("10")
                     else:
                         str_w_encoded.append("11")
-                # Keine Invertierung notwendig, da bereits hinten angehängt
                 str_w_encoded = "0" + "".join(str_w_encoded)
-                # print(str_w_encoded)
-                # print(count_len)
+
                 # Has to be str, else the BinaryEncoder cant handle it.
                 str_w_encoded = str(BitArray(bin=str_w_encoded))
                 temp_word_encoded.append(str_w_encoded)
@@ -98,50 +96,4 @@ class CategoricalPatterns(BaseEstimator, TransformerMixin):
             return transformed
 
     def get_feature_names(self, input_features=None):
-        # Rückgabe der Featurenamen
         return self.new_feature_names
-
-
-# test_daten = pd.DataFrame(
-#     {
-#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
-#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
-#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-#     })
-
-# train_daten = pd.DataFrame(
-#     {
-#         "COLTestCAT1": np.array(["Hund","Hund", "Hund123"]),
-#         "COLTestCAT2": np.array(["K*atze","K*atze", np.nan]),
-#         "timestamp": np.array(["2023-02-08 06:58:14.017000+00:00", "2023-02-08 15:54:13.693000+00:00", np.nan])
-#     })
-
-# df = pd.concat([test_daten, train_daten])
-
-# from category_encoders import BinaryEncoder
-# from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
-
-# preprocessing = Pipeline(steps=[
-#     ('PatternExtraction',
-#      ColumnTransformer(transformers=[
-
-#          ("pattern",
-#           Pipeline(
-#               steps=[
-#                          ("C", SimpleImputer(strategy="most_frequent")),
-#                          # ("OHE", OneHotEncoder(handle_unknown="ignore",sparse=False)),
-#                          # ("OrdinalEnc",OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)),
-#                         ("Pattern", CategoricalPatterns()),
-#                         # ("OHE",OneHotEncoder(sparse_output=False)),
-#                         # ("OrdinalEnc",OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)),
-#                         ("BinaryEnc",BinaryEncoder(handle_unknown="indicator")),
-#                          ]), make_column_selector(dtype_include=np.object_)
-#           )
-#      ], remainder='passthrough', n_jobs=-1, verbose=True))
-# ])
-
-
-# preprocessed_data = preprocessing.fit_transform(df)
-# preprocessed_data
-
-# %%

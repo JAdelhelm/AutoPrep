@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.utils.validation import check_array, check_is_fitted
 
 import warnings
 
@@ -17,7 +18,7 @@ from sklearn import set_config
 set_config(transform_output="pandas")
 
 
-class XCopySchemaTransformer(BaseEstimator, TransformerMixin):
+class TypeInferenceTransformerPattern(BaseEstimator, TransformerMixin):
     """
     SchemaTransformer for a certain Pandas DataFrame input.
 
@@ -35,8 +36,8 @@ class XCopySchemaTransformer(BaseEstimator, TransformerMixin):
     datetime_columns : list
         List of certain Time-Columns that should be converted in timestamp data types.
 
-    exclude_columns : list
-        List of Columns that will be dropped.
+    include_columns : list
+        List of Columns for pattern recognition.
 
     name_transformer : list
         Is used for the output, so the enduser can check what Columns are used for a certain Transformation.
@@ -44,13 +45,15 @@ class XCopySchemaTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, datetime_columns=None, exclude_columns: list = None, name_transformer=""
+        self, datetime_columns=None, include_columns = None, name_transformer=""
     ):
         self.datetime_columns = datetime_columns
-
-        self.exclude_columns = exclude_columns
+        self.include_columns = include_columns
         self.feature_names = None
         self.name_transformer = name_transformer
+
+        if isinstance(self.include_columns, list) is False:
+            raise ValueError("Columns for pattern recognition has to be defined with pattern_recognition_columns!")
 
     def convert_schema_nans(self, X):
         X_Copy = X.copy()
@@ -101,10 +104,17 @@ class XCopySchemaTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        if self.exclude_columns is not None:
-            for col in self.exclude_columns:
+
+        all_columns = X.columns.tolist()
+
+        exclude_columns = [col for col in all_columns if col not in self.include_columns]
+
+        if exclude_columns is not None:
+            for col in exclude_columns:
                 try:
-                    X.drop([col], axis=1, inplace=True)
+                    # X.drop([col], axis=1, inplace=True)
+                    X = X.drop(columns=exclude_columns, axis=1)
+
                 except:
                     print(f"Column {col} could not be dropped.")
 
@@ -123,52 +133,3 @@ class XCopySchemaTransformer(BaseEstimator, TransformerMixin):
     def get_feature_names(self, input_features=None):
         return self.feature_names
 
-    # def convert_column_to_naive_timestamp(self, X, column_name):
-    #     """
-    #     Konvertieren einer 'datetime64[ns, UTC]' Spalte zu 'datetime64[ns]'
-    #     """
-    #     try: return X[column_name].dt.tz_convert(None)
-    #     except: pass
-
-
-# Beispielverwendung
-# data = pd.DataFrame({
-#     'evseid': [
-#         'IT*DUF*DAXS20*2', 'ANOMALY', 'RO*RNVED166*01*1', # evseid zweite Zeile
-#         'SE*CLE*E20665*1', 'SE*CLE*E2349*1', 'PT*HRZ*E*PRT*00123*02'
-#     ],
-#     'locationId': [196133.0, 224509.0, -9999.0, 225551.0, 148382.0, 228302.0], # locationId 3 Zeile
-#     'uuid': [
-#         'INVALID_UUID', # Anomalous uuid in first row
-#         'd08f6f93-cea0-4a6f-a067-de6612e443b7', '69bf02ba-8530-4352-a6b1-31ae9f8c570e',
-#         'b755e455-2bff-42d7-83c9-c4f1d37ba5b3', 'c2621085-7f31-4c64-bf8a-b632ecee0fa3',
-#         'be999c75-71bf-4b68-906e-31ea42a3a824'
-#     ],
-#     'platform': ['HUBJECT', 'ANOMALY_PLATFORM', 'HUBJECT', 'HUBJECT', 'ANOMALY_PLATFORM', 'HUBJECT'], # Platform in zweiter und vierter Zeile
-#     'oldAvailability': ['AVAILABLE', 'AVLAILABLE', 'AVAILABLE', 'OCCUPIED', 'AVAILABLE', 'AVAILABLE'], # Zweite Zeile falsch geschrieben
-#     'oldTimestamp': [
-#         '2023-02-08T13:36:14.342Z', '2023-01-09T14:28:13.529Z', '2023-02-09T14:26:12.992Z',
-#         '2023-02-10T12:38:15.322Z', '2023-02-09T14:26:13.185Z', '2023-02-09T14:28:13.408Z' # Falsches Datum in zweiter Zeile
-#     ],
-#     'availability': ['OCCUPIED', 'OCCUPIED', 'OCCUPIED', 'AVAILABLE', 'OCCUPIED', 'OCCUPIED'],
-#     'timestamp': [
-#         '2023-02-09 15:38:14.954000+00:00', '2023-02-09 15:30:12.996000+00:00',
-#         '2023-02-09 14:28:13.381000+00:00', '2023-02-09 13:28:13.568000+00:00',
-#         '2023-02-09 15:32:14.362000+00:00', '2022-02-08 14:30:16.858000+00:00' # Falscher Zeitstempel in letzter Zeile Monat
-#     ],
-#         'y_true': [
-#         1, 1, 1, 0, 1, 1
-#     ]
-# })
-
-# preprocessor = make_pipeline(
-#             ColumnTransformer(transformers=[
-#                 ("XCopy", XCopySchemaTransformer(), make_column_selector(dtype_include=None))
-#             ], remainder="passthrough", n_jobs=-1),
-#             ColumnTransformer(transformers=[
-#                 ("C_imputed", SimpleImputer(strategy="most_frequent", missing_values=np.nan), make_column_selector(dtype_include=np.object_)),
-#                 ("N_imputed", SimpleImputer(strategy="median"), make_column_selector(dtype_include=np.number)),
-#             ], remainder="passthrough", n_jobs=-1)
-#             )
-
-# transformed_data = preprocessor.fit_transform(data)

@@ -57,23 +57,3 @@ class TukeyTransformer(BaseEstimator, TransformerMixin):
         return [col+"_TUKEY" for col in input_features]
 
 
-# if __name__ == "__main__":
-#     preprocessing = ColumnTransformer(
-#         [
-#             # ("cat", prep_cat, make_column_selector(dtype_include=np.object_)),
-#             # ("num", prep_num, make_column_selector(dtype_include=np.number)),
-#             ("tukey", TukeyTransformer(factor=1.5), make_column_selector(dtype_include=None))
-#         ],
-#         remainder='passthrough' # this will pass through any columns not specified in the transformers
-#     )
-
-#     train_data = pd.DataFrame({"Example_column": np.array([1,2,3,4,5])})
-#     test_data = pd.DataFrame({"Example_column":[3,1000]})
-
-#     preprocessing.fit(train_data)
-
-#     preprocessed_data = preprocessing.transform(test_data)
-#     print(preprocessed_data)
-
-
-# %%
