@@ -24,4 +24,5 @@ pipeline = AutoPrep(
 )
 X_output = pipeline.preprocess(df=data)
 
+# pipeline.get_profiling(X=data)
 # pipeline.visualize_pipeline_structure_html()

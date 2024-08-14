@@ -34,6 +34,42 @@ set_config(transform_output="pandas")
 
 
 class AutoPrep():
+    """
+    The AutoPrep (Automated Preprocessing) class represents the control class/main class for managing and executing configurated pipelines.
+
+    Parameters
+    ----------
+    datetime_columns : list
+        List of column names representing time data that should be converted to timestamp data types.
+
+    nominal_columns : list
+        Columns that should be transformed to nominal data types.
+
+    ordinal_columns : list
+        Columns that should be transformed to ordinal data types.
+
+    exclude_columns : list
+        List of columns to be dropped from the dataset.
+
+    pattern_recognition_columns : list
+        List of columns to be included into pattern recognition.
+
+    drop_columns_no_variance : bool
+        If set to True, all columns with zero standard deviation/variance will be removed.
+
+
+    Attributes
+    ----------
+    df : pd.DataFrame
+        The Input Dataframe.
+
+    pipeline_structure : Pipeline
+        The pipeline structure.
+
+    fitted_pipeline : Pipeline
+        The fitted pipeline.
+
+    """
     def __init__(
         self,
         datetime_columns: list = None,
@@ -91,12 +127,11 @@ class AutoPrep():
     ) -> pd.DataFrame:
 
         self._df = df.copy()
-
         self._df_preprocessed = self.remove_excluded_columns(df = self._df)
         
         self._fitted_pipeline = self.fit_pipeline_structure(df = self._df_preprocessed)
-
         self._df_preprocessed =  self._fitted_pipeline.transform(self._df_preprocessed)
+
 
         self._df_preprocessed = self.remove_no_variance_columns(
             df=self._df_preprocessed,
@@ -187,7 +222,15 @@ class AutoPrep():
                 return df_dropped
             else:
                 return df
-
+            
+    def get_profiling(self, X: pd.DataFrame, deeper_profiling=False):
+        from ydata_profiling import ProfileReport
+        if deeper_profiling == False:
+            profile = ProfileReport(X, title="Profiling Report")
+            profile.to_file("DQ_report.html")
+        else:
+            profile = ProfileReport(X, title="Profiling Report", explorative=True)
+            profile.to_file("DQ_report_deep.html")
 
     def visualize_pipeline_structure_html(self, filename="./visualization/PipelineDQ"):
         """

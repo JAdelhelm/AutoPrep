@@ -40,29 +40,3 @@ class NaNColumnCreator(BaseEstimator, TransformerMixin):
 
 
 
-# from sklearn.impute import MissingIndicator
-# preprocessing = ColumnTransformer(
-#     [
-# #         ("cat", prep_cat, make_column_selector(dtype_include=np.object_)),
-# #         ("num", prep_num, make_column_selector(dtype_include=np.number)),
-# #         ("tukey", TukeyTransformer(), make_column_selector(dtype_include=np.number)),
-# #         ("z", Z_Transformer(threshold=3, z_scores_output=True), make_column_selector(dtype_include=np.number))
-#         ("nan_marker_num", NaNColumnCreator(), make_column_selector(dtype_include=np.number)),
-#         ("nan_marker_cat", NaNColumnCreator(), make_column_selector(dtype_include=np.object_))
-#         # ("nan_marker_num", MissingIndicator(features="all"), make_column_selector(dtype_include=np.number)),
-#         # ("nan_marker_cat", MissingIndicator(features="all"), make_column_selector(dtype_include=np.object_))
-
-#     ],
-#      remainder='passthrough' # this will pass through any columns not specified in the transformers
-# )
-
-# test_data = pd.DataFrame({"Example_num_column":np.array([1,2,3,4,5,100000, np.nan]),
-#                           "Example_cat_column":["Katze","Hund","Hund","Katze",np.nan, np.nan, np.nan],
-#                           "Example_cat_column_no_nans":["Katze","Hund","Hund","Katze","Hund","Hund","Katze"],
-#                           "Example_nans":np.array([1,2,3,4,5,100000, np.nan]),
-#                          "Example_no_nan":np.array([1,2,3,4,5,100000, 500])})
-
-# preprocessed_data = preprocessing.fit_transform(test_data)
-# preprocessed_data
-
-# %%

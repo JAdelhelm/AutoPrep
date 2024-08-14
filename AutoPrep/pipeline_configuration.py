@@ -22,11 +22,11 @@ try:
     from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
     from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
     from AutoPrep.pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-    from AutoPrep.pipelines.engineering.CategoricalPatterns import CategoricalPatterns
-    from AutoPrep.pipelines.dummy.XCopySchemaTransformer import XCopySchemaTransformer
-    from AutoPrep.pipelines.dummy.XCopySchemaTransformerNominal import XCopySchemaTransformerNominal
-    from AutoPrep.pipelines.dummy.XCopySchemaTransformerOrdinal import XCopySchemaTransformerOrdinal
-    from AutoPrep.pipelines.dummy.XCopySchemaTransformerPattern import XCopySchemaTransformerPattern
+    from AutoPrep.pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
+    from AutoPrep.pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
+    from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+    from AutoPrep.pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
+    from AutoPrep.pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
     from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
     from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
     from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
@@ -37,11 +37,11 @@ except ImportError:
     from pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
     from pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
     from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-    from pipelines.engineering.CategoricalPatterns import CategoricalPatterns
-    from pipelines.dummy.XCopySchemaTransformer import XCopySchemaTransformer
-    from pipelines.dummy.XCopySchemaTransformerNominal import XCopySchemaTransformerNominal
-    from pipelines.dummy.XCopySchemaTransformerOrdinal import XCopySchemaTransformerOrdinal
-    from pipelines.dummy.XCopySchemaTransformerPattern import XCopySchemaTransformerPattern
+    from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
+    from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
+    from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+    from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
+    from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
     from pipelines.timeseries.DateEncoder import DateEncoder
     from pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
     from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
@@ -70,6 +70,8 @@ set_config(transform_output="pandas")
 class PipelinesConfiguration():
     """
     The PipelinesConfiguration class represents the class to configure pipelines for data preprocessing.
+
+    There are different SchemaTransformer, to handle different datatypes as input.
 
     Methods
     -------
@@ -124,8 +126,8 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "X",
-                                XCopySchemaTransformer(
+                                "",
+                                TypeInferenceTransformer(
                                     datetime_columns=self.datetime_columns,
                                     exclude_columns=self.exclude_columns,
                                     name_transformer="Schema Standard Pipeline",
@@ -156,7 +158,7 @@ class PipelinesConfiguration():
                                     steps=[
                                         (
                                             "X_nan",
-                                            XCopySchemaTransformer(
+                                            TypeInferenceTransformer(
                                                 datetime_columns=self.datetime_columns,
                                                 name_transformer="Schema NaNMarker",
                                             ),
@@ -229,7 +231,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "stat_tukey",
+                                "tukey",
                                 Pipeline(
                                     steps=[
                                         # ("Z-Transformation", StandardScaler().set_output(transform="pandas")),
@@ -403,7 +405,7 @@ class PipelinesConfiguration():
                 steps=[
                     (
                         "X_pattern",
-                        XCopySchemaTransformerPattern(
+                        TypeInferenceTransformerPattern(
                             include_columns=pattern_recognition_columns,
                             datetime_columns=datetime_columns_pattern,
                             name_transformer="Schema PatternExtraction",
@@ -414,7 +416,7 @@ class PipelinesConfiguration():
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "pattern_processing_inner",
+                                    "processing",
                                     Pipeline(
                                         steps=[
                                             (
@@ -423,7 +425,7 @@ class PipelinesConfiguration():
                                             ),
                                             (
                                                 "pattern_extraction",
-                                                CategoricalPatterns(),
+                                                BinaryPatternTransformer(),
                                             ),
                                             (
                                                 "BinaryEnc",
@@ -453,7 +455,7 @@ class PipelinesConfiguration():
             steps=[
                 (
                     "X_nominal",
-                    XCopySchemaTransformerNominal(
+                    TypeInferenceTransformerNominal(
                         nominal_columns=nominal_columns,
                         datetime_columns=datetime_columns,
                         name_transformer="Schema Nominal",
@@ -464,7 +466,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "nominal_processing_inner",
+                                "processing",
                                 Pipeline(
                                     steps=[
                                         (
@@ -498,7 +500,7 @@ class PipelinesConfiguration():
             steps=[
                 (
                     "X_ordinal",
-                    XCopySchemaTransformerOrdinal(
+                    TypeInferenceTransformerOrdinal(
                         ordinal_columns=ordinal_columns,
                         datetime_columns=datetime_columns,
                         name_transformer="Schema Ordinal",
@@ -509,7 +511,7 @@ class PipelinesConfiguration():
                     ColumnTransformer(
                         transformers=[
                             (
-                                "ordinal_processing_inner",
+                                "processing",
                                 Pipeline(
                                     steps=[
                                         (
@@ -539,14 +541,7 @@ class PipelinesConfiguration():
         )
 
 
-    def get_profiling(self, X: pd.DataFrame, deeper_profiling=False):
-        from ydata_profiling import ProfileReport
-        if deeper_profiling == False:
-            profile = ProfileReport(X, title="Profiling Report")
-            profile.to_file("DQ_report.html")
-        else:
-            profile = ProfileReport(X, title="Profiling Report", explorative=True)
-            profile.to_file("DQ_report_deep.html")
+
 
 
     

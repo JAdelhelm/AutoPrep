@@ -81,6 +81,8 @@ class PipelineControl(PipelinesConfiguration):
         The pipeline includes profiling, datatype transformation, and preprocessing steps
         for categorical, numerical, and timeseries data.
 
+        The make_column_selector is set to None to include all incoming data.
+
         Returns
         -------
         Pipeline
@@ -93,7 +95,7 @@ class PipelineControl(PipelinesConfiguration):
                     ColumnTransformer(
                         transformers=[
                             (
-                                "X",
+                                "",
                                 super().pre_pipeline(
                                     datetime_columns=self.datetime_columns,
                                     exclude_columns=self.exclude_columns,
@@ -110,17 +112,17 @@ class PipelineControl(PipelinesConfiguration):
                     ColumnTransformer(
                         transformers=[
                             (
-                                "Numerical",
+                                "numerical",
                                 super().numeric_pipeline(),
                                 make_column_selector(dtype_include=np.number),
                             ),
                             (
-                                "Categorical",
+                                "categorical",
                                 super().categorical_pipeline(),
                                 make_column_selector(dtype_include=np.object_),
                             ),
                             (
-                                "Datetime",
+                                "date",
                                 super().timeseries_pipeline(),
                                 make_column_selector(
                                     dtype_include=(
@@ -147,6 +149,8 @@ class PipelineControl(PipelinesConfiguration):
         additional steps for handling nominal and ordinal columns, NaN marker,
         and pattern extraction based on the provided settings.
 
+        If no column names have been specified, the standard configuration of the pipeline is used.
+
         Returns
         -------
         Pipeline
@@ -161,17 +165,17 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -198,35 +202,35 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with nominal and ordinal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Nominal Columns",
+                                    "Nominal",
                                     super().nominal_pipeline(
                                         nominal_columns=self.nominal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Ordinal Columns",
+                                    "Ordinal",
                                     super().ordinal_pipeline(
                                         ordinal_columns=self.ordinal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -242,7 +246,7 @@ class PipelineControl(PipelinesConfiguration):
                 ]
             )
 
-        elif self.ordinal_columns is None and self.nominal_columns is not None:
+        elif self.nominal_columns is not None and self.ordinal_columns is None:
             if self.exclude_columns is None:
                 self.exclude_columns = self.nominal_columns
             else:
@@ -253,29 +257,29 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with nominal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Nominal Columns",
+                                    "Nominal",
                                     super().nominal_pipeline(
                                         nominal_columns=self.nominal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
-                                # ("Ordinal Columns",super().ordinal_pipeline(ordinal_columns=self.ordinal_columns),make_column_selector(dtype_include=None)),
+                                # ("Ordinal",super().ordinal_pipeline(ordinal_columns=self.ordinal_columns),make_column_selector(dtype_include=None)),
                                 # (
                                 #     "NaNMarker Pipeline",
                                 #     super().nan_marker_pipeline(),
                                 #     make_column_selector(dtype_include=None),
                                 # ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
@@ -302,29 +306,28 @@ class PipelineControl(PipelinesConfiguration):
             return Pipeline(
                 steps=[
                     (
-                        "Automated Anomaly Detection Pipeline",
+                        "Automated Preprocessing Pipeline with ordinal columns",
                         ColumnTransformer(
                             transformers=[
                                 (
-                                    "Preprocessing Pipeline",
+                                    "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
                                 ),
-                                # ("Nominal Columns",super().nominal_pipeline(nominal_columns=self.nominal_columns),make_column_selector(dtype_include=None)),
                                 (
-                                    "Ordinal Columns",
+                                    "Ordinal",
                                     super().ordinal_pipeline(
                                         ordinal_columns=self.ordinal_columns
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "NaNMarker Pipeline",
+                                    "NaNMarker",
                                     super().nan_marker_pipeline(),
                                     make_column_selector(dtype_include=None),
                                 ),
                                 (
-                                    "Categorical_PatternExtraction",
+                                    "PatternExtraction",
                                     super().pattern_extraction(
                                         pattern_recognition_columns = self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
