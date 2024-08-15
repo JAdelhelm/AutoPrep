@@ -76,19 +76,18 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        """
-        Only uses specified nominal columns.
-        If one of these are specified in exclude_columns, then this column will be dropped.
-        """
+        if self.nominal_columns is None:
+            self.nominal_columns = X.select_dtypes(include=['object', 'category']).columns.tolist()
+        else:
+            missing_cols = [col for col in self.nominal_columns if col not in X.columns]
+            if missing_cols:
+                raise KeyError(f"Columns not found in the DataFrame: {missing_cols}")
+
         X = X[self.nominal_columns]
 
         if self.exclude_columns is not None:
-            for col in self.exclude_columns:
-                try:
-                    X.drop([col], axis=1, inplace=True)
-                except Exception as e:
-                    print(e)
-                    print(f"Column {col} could not be dropped.")
+            self.exclude_columns = [col for col in self.exclude_columns if col in X.columns]
+            X.drop(columns=self.exclude_columns, inplace=True)
 
         self.feature_names = X.columns
 
@@ -100,6 +99,7 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
         print(X_copy.dtypes, "\n")
 
         return X_copy
+
 
     def get_feature_names(self, input_features=None):
         return self.feature_names
