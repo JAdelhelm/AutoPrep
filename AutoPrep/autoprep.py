@@ -162,7 +162,7 @@ class AutoPrep():
                 "when initializing the AutoPrepAD object.\n"
             )
 
-            raise DatetimeException(f"{e}\n\n\n{message}")
+            raise TypeError(f"{e}\n\n\n{message}")
         
         except Exception as e:
             print(self.df.isna().sum(), "\n", e, "\n")

@@ -469,6 +469,7 @@ class PipelinesConfiguration():
                                 "processing",
                                 Pipeline(
                                     steps=[
+                                        # SimpleImputer causing problems at mixed datatypes
                                         (
                                             "impute_nominal",
                                             SimpleImputer(strategy="most_frequent"),

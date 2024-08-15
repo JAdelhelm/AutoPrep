@@ -272,6 +272,11 @@ class PipelineControl(PipelinesConfiguration):
                                     ),
                                     make_column_selector(dtype_include=None),
                                 ),
+                                (
+                                    "NaNMarker",
+                                    super().nan_marker_pipeline(),
+                                    make_column_selector(dtype_include=None),
+                                ),
                                 # ("Ordinal",super().ordinal_pipeline(ordinal_columns=self.ordinal_columns),make_column_selector(dtype_include=None)),
                                 # (
                                 #     "NaNMarker Pipeline",

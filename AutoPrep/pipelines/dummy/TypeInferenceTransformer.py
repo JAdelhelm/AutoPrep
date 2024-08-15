@@ -45,7 +45,9 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, datetime_columns=None, exclude_columns: list = None, name_transformer=""
+        self, datetime_columns=None, 
+        exclude_columns: list = None, 
+        name_transformer=""
     ):
         self.datetime_columns = datetime_columns
 
