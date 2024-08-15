@@ -108,18 +108,13 @@ class PipelineControl(PipelinesConfiguration):
                     ),
                 ),
                 (
-                    "Preprocessing - Categorical, numerical and timeseries data",
+                    "Preprocessing - Numerical and timeseries data",
                     ColumnTransformer(
                         transformers=[
                             (
                                 "numerical",
                                 super().numeric_pipeline(),
                                 make_column_selector(dtype_include=np.number),
-                            ),
-                            (
-                                "categorical",
-                                super().categorical_pipeline(),
-                                make_column_selector(dtype_include=np.object_),
                             ),
                             (
                                 "date",
@@ -165,6 +160,17 @@ class PipelineControl(PipelinesConfiguration):
                         ColumnTransformer(
                             transformers=[
                                 (
+                                    "Categorical",
+                                    Pipeline(
+                                        steps=[
+                                            ("Standard", super().pre_pipeline(datetime_columns=self.datetime_columns, exclude_columns=self.exclude_columns)),
+                                            # ("Impute", SimpleImputer(strategy="most_frequent")),
+                                            ("BinaryEnc", BinaryEncoder(handle_unknown="indicator"))
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.object_),
+                                ),
+                                (
                                     "Preprocessing",
                                     standard_pipeline,
                                     make_column_selector(dtype_include=None),
@@ -177,7 +183,7 @@ class PipelineControl(PipelinesConfiguration):
                                 (
                                     "PatternExtraction",
                                     super().pattern_extraction(
-                                        pattern_recognition_columns = self.pattern_recognition_columns,
+                                        pattern_recognition_columns=self.pattern_recognition_columns,
                                         datetime_columns_pattern=self.datetime_columns,
                                     ),
                                     make_column_selector(dtype_include=np.object_),

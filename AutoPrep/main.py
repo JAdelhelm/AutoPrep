@@ -15,12 +15,13 @@ data = pd.DataFrame(data)
 ########################################
 
 
+
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
 
-    nominal_columns=[ "Name", "Is Manager"],
-    exclude_columns=["ID"],
+    # nominal_columns=[ "Name", "Is Manager"],
+    # exclude_columns=["ID"],
     datetime_columns=["Hire Date"]
 
 )
