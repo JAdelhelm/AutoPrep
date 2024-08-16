@@ -21,12 +21,9 @@ data = pd.DataFrame(data)
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    drop_columns_no_variance=True,
-    nominal_columns=["Is Manager"],
-    ordinal_columns=['Rank'],
-    numerical_columns=["Salary"],
-    pattern_recognition_columns=["Name"],
-    datetime_columns=["Hire Date"]
+    nominal_columns=["ID", "Name", "Is Manager"],
+    # datetime_columns=["Hire Date"],
+    # pattern_recognition_columns=["Name"]
 )
 X_output = pipeline.preprocess(df=data)
 

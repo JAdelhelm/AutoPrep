@@ -46,7 +46,8 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, datetime_columns=None, 
+        self, 
+        datetime_columns=None, 
         exclude_columns: list = None, 
         numerical_columns: list = None,
         name_transformer=""
@@ -95,7 +96,7 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
                     except:
                         pass
                     
-            if col in self.numerical_columns:
+            if self.numerical_columns is not None and col in self.numerical_columns:
                 try:
                     X_copy[col] = X_copy[col].astype(np.float64)
                 except (ValueError, TypeError):
