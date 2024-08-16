@@ -39,7 +39,7 @@ except ImportError:
     from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
     from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
     from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-    from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+    from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
     from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
     from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
     from pipelines.timeseries.DateEncoder import DateEncoder
@@ -435,13 +435,6 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
-                                            "Nominal",
-                                            TypeInferenceTransformerNominal(
-                                                datetime_columns=self.datetime_columns,
-                                                name_transformer="Inference Nominal",
-                                            ),
-                                        ),
-                                        (
                                             "impute_nominal",
                                             SimpleImputer(strategy="most_frequent"),
                                         ),                                        
@@ -467,6 +460,9 @@ class PipelinesConfiguration():
         self,
         ordinal_columns: list = None
     ):
+        if len(ordinal_columns) == 0:
+            raise Exception("Ordinal columns are empty...")
+        
         return Pipeline(
             steps=[
                 (
@@ -477,13 +473,6 @@ class PipelinesConfiguration():
                                 "ordinal",
                                 Pipeline(
                                     steps=[
-                                        (
-                                            "Ordinal",
-                                            TypeInferenceTransformerNominal(
-                                                datetime_columns=self.datetime_columns,
-                                                name_transformer="Inference Ordinal",
-                                            ),
-                                        ),
                                         (
                                             "impute_ordinal",
                                             SimpleImputer(strategy="most_frequent"),

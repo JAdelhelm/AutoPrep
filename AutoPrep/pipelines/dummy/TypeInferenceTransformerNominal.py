@@ -102,4 +102,3 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
 
     def get_feature_names(self, input_features=None):
         return self.feature_names
-

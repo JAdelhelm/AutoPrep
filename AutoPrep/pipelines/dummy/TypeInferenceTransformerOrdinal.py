@@ -136,4 +136,3 @@ class TypeInferenceTransformerOrdinal(BaseEstimator, TransformerMixin):
         return self.feature_names
 
 
-
