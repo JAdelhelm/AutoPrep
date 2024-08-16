@@ -21,9 +21,9 @@ from pathlib import Path
 
 
 try:
-    from AutoPrep.pipeline_control import PipelineControl
+    from AutoPrep.control import PipelineControl
 except ImportError:
-    from pipeline_control import PipelineControl
+    from control import PipelineControl
 # from pipeline_configuration import PipelinesConfiguration
 
 
@@ -57,6 +57,8 @@ class AutoPrep():
     drop_columns_no_variance : bool
         If set to True, all columns with zero standard deviation/variance will be removed.
 
+    n_jobsint, default=None
+        Number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means using all processors. See Glossary for more details.
 
     Attributes
     ----------
@@ -75,20 +77,21 @@ class AutoPrep():
         datetime_columns: list = None,
         nominal_columns: list = None,
         ordinal_columns: list = None,
+        numerical_columns: list = None,
         exclude_columns: list = None,
         pattern_recognition_columns: list = None,
         drop_columns_no_variance: bool = True,
+        n_jobs: int = -1,
         ):
 
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
         self.ordinal_columns = ordinal_columns
+        self.numerical_columns = numerical_columns
         self.exclude_columns = exclude_columns
-
         self.pattern_recognition_columns = pattern_recognition_columns
-        
         self.drop_columns_no_variance = drop_columns_no_variance
-
+        self.n_jobs = n_jobs
 
         self._pipeline_structure = None
         self._fitted_pipeline = None
@@ -148,30 +151,24 @@ class AutoPrep():
             datetime_columns = self.datetime_columns,
             nominal_columns = self.nominal_columns,
             ordinal_columns = self.ordinal_columns,
-            pattern_recognition_columns = self.pattern_recognition_columns
+            numerical_columns = self.numerical_columns,
+            pattern_recognition_columns = self.pattern_recognition_columns,
+            n_jobs = self.n_jobs
         )
 
-        self._pipeline_structure = self._pipeline_structure.pipeline_configuration()
+        df = self._pipeline_structure.standard_dtype_transformer(df=df)
+        self._df = df.copy(deep=True)
+
+        self._pipeline_structure = self._pipeline_structure.pipeline_control()
 
         try:
             return self._pipeline_structure.fit(df)
         except TypeError as e:
-            message = (
-                "Please check if your data contains datetime columns.\n"
-                "If it does, ensure they are specified using the 'datetime_columns' parameter.\n"
-                "when initializing the AutoPrepAD object.\n"
-            )
-
-            raise DatetimeException(f"{e}\n\n\n{message}")
+            raise TypeError(f"{e}\n\n\nDid you specified datetime columns?")
         
         except Exception as e:
             print(self.df.isna().sum(), "\n", e, "\n")
             raise
-
-
-
-
-
 
 
         
@@ -222,7 +219,11 @@ class AutoPrep():
                 return df_dropped
             else:
                 return df
-            
+
+
+
+
+
     def get_profiling(self, X: pd.DataFrame, deeper_profiling=False):
         from ydata_profiling import ProfileReport
         if deeper_profiling == False:
@@ -232,7 +233,7 @@ class AutoPrep():
             profile = ProfileReport(X, title="Profiling Report", explorative=True)
             profile.to_file("DQ_report_deep.html")
 
-    def visualize_pipeline_structure_html(self, filename="./visualization/PipelineDQ"):
+    def visualize_pipeline_structure_html(self, filename="./visualization/PipelineStructure"):
         """
         Save the pipeline structure as an HTML file.
 
@@ -251,7 +252,6 @@ class AutoPrep():
 
         """
         Path("./visualization").mkdir(parents=True, exist_ok=True)
-        Path("./visualization/Pipeline").mkdir(parents=True, exist_ok=True)
         with open(file=f"{filename}.html", mode="w", encoding="utf-8") as f:
             f.write(estimator_html_repr(self.pipeline_structure))
             f.close()

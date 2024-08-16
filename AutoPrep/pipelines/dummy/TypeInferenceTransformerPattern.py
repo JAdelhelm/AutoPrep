@@ -65,40 +65,6 @@ class TypeInferenceTransformerPattern(BaseEstimator, TransformerMixin):
             X_Copy[col] = X_Copy[col].replace("", np.nan)
         return X_Copy
 
-    def infer_schema_X(self, X_copy):
-        try:
-            X_copy = X_copy.infer_objects()
-        except:
-            pass
-
-        for col in X_copy.columns:
-            if X_copy[col].dtype == "object":
-                if self.datetime_columns is not None and col in self.datetime_columns:
-                    try:
-                        X_copy[col] = pd.to_datetime(
-                            X_copy[col], infer_datetime_format=True, errors="coerce"
-                        )
-                        # print("\nColumns to time dtype:", col, "\n")
-                    except:
-                        pass
-                else:
-                    try:
-                        X_copy[col] = pd.to_datetime(
-                            X_copy[col], infer_datetime_format=True
-                        )
-                        # print("\nColumns to time dtype:", col, "\n")
-                    except:
-                        pass
-
-                try:
-                    X_copy[col] = X_copy[col].astype(np.float64)
-                    # print("\nColumns to numeric dtype:", col, "\n")
-                except (ValueError, TypeError):
-                    pass
-
-        X_copy.convert_dtypes()
-
-        return X_copy
 
     def fit(self, X, y=None):
         return self
@@ -123,10 +89,7 @@ class TypeInferenceTransformerPattern(BaseEstimator, TransformerMixin):
         X_copy = X.copy()
         X_copy = self.convert_schema_nans(X_copy)
 
-        X_copy = self.infer_schema_X(X_copy=X_copy)
-
-        print(f"\n\nDtypes-Schema / Columns for {self.name_transformer}:\n")
-        print(X_copy.dtypes, "\n")
+        X_copy = X_copy.astype(str)
 
         return X_copy
 

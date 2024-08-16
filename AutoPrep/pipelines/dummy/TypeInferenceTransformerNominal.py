@@ -7,9 +7,8 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.utils.validation import check_array, check_is_fitted
-
+import pdb
 import warnings
-
 # Warnungen vom Versuch des castens ignorieren
 warnings.filterwarnings("ignore")
 
@@ -61,6 +60,7 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
         self.feature_names = None
         self.name_transformer = name_transformer
 
+
     def convert_schema_nans(self, X):
         X_Copy = X.copy()
 
@@ -71,66 +71,34 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
             X_Copy[col] = X_Copy[col].replace("", np.nan)
         return X_Copy
 
-    def infer_schema_X(self, X_copy):
-        try:
-            X_copy = X_copy.infer_objects()
-        except:
-            pass
-
-        for col in X_copy.columns:
-            if X_copy[col].dtype == "object":
-                if self.datetime_columns is not None and col in self.datetime_columns:
-                    try:
-                        X_copy[col] = pd.to_datetime(
-                            X_copy[col], infer_datetime_format=True, errors="coerce"
-                        )
-                        # print("\nColumns to time dtype:", col, "\n")
-                    except:
-                        pass
-                else:
-                    try:
-                        X_copy[col] = pd.to_datetime(
-                            X_copy[col], infer_datetime_format=True
-                        )
-                        # print("\nColumns to time dtype:", col, "\n")
-                    except:
-                        pass
-
-                try:
-                    X_copy[col] = X_copy[col].astype(np.float64)
-                    # print("\nColumns to numeric dtype:", col, "\n")
-                except (ValueError, TypeError):
-                    pass
-
-        X_copy.convert_dtypes()
-
-        return X_copy
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X) -> pd.DataFrame:
+        if self.nominal_columns is None:
+            self.nominal_columns = X.select_dtypes(include=['object', 'category']).columns.tolist()
+        else:
+            missing_cols = [col for col in self.nominal_columns if col not in X.columns]
+            if missing_cols:
+                raise KeyError(f"Columns not found in the DataFrame: {missing_cols}")
 
         X = X[self.nominal_columns]
 
         if self.exclude_columns is not None:
-            for col in self.exclude_columns:
-                try:
-                    X.drop([col], axis=1, inplace=True)
-                except:
-                    print(f"Column {col} could not be dropped.")
+            self.exclude_columns = [col for col in self.exclude_columns if col in X.columns]
+            X.drop(columns=self.exclude_columns, inplace=True)
 
         self.feature_names = X.columns
 
         X_copy = X.copy()
         X_copy = self.convert_schema_nans(X_copy)
 
-        X_copy = self.infer_schema_X(X_copy=X_copy)
+        X_copy = X_copy.astype(str)
 
-        print(f"\n\nDtypes-Schema / Columns for {self.name_transformer}:\n")
-        print(X_copy.dtypes, "\n")
 
         return X_copy
+
 
     def get_feature_names(self, input_features=None):
         return self.feature_names
