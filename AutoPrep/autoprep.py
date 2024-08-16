@@ -74,12 +74,12 @@ class AutoPrep():
     """
     def __init__(
         self,
-        datetime_columns: list = None,
-        nominal_columns: list = None,
-        ordinal_columns: list = None,
-        numerical_columns: list = None,
-        exclude_columns: list = None,
-        pattern_recognition_columns: list = None,
+        datetime_columns: list = [],
+        nominal_columns: list = [],
+        ordinal_columns: list = [],
+        numerical_columns: list = [],
+        exclude_columns: list = [],
+        pattern_recognition_columns: list = [],
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
         ):

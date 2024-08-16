@@ -156,7 +156,7 @@ class PipelineControl(PipelinesConfiguration):
             Pipeline or FeatureUnion: The configured pipeline for preprocessing the data.
         """               
 
-        if self.nominal_columns is not None and self.ordinal_columns is None: 
+        if len(self.nominal_columns) > 0 and len(self.ordinal_columns) == 0: 
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
@@ -166,7 +166,7 @@ class PipelineControl(PipelinesConfiguration):
                     ],
                     n_jobs=self.n_jobs
                 )
-        elif self.nominal_columns is None and self.ordinal_columns is not None: 
+        elif len(self.nominal_columns) == 0 and len(self.ordinal_columns) > 0: 
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
@@ -176,7 +176,7 @@ class PipelineControl(PipelinesConfiguration):
                     ],
                     n_jobs=self.n_jobs
                 )
-        elif self.nominal_columns is not None and self.ordinal_columns is not None: 
+        elif len(self.nominal_columns) > 0 and len(self.ordinal_columns) > 0: 
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
@@ -204,6 +204,7 @@ class PipelineControl(PipelinesConfiguration):
         """
         self.categorical_columns = list(df.select_dtypes(include=[object]).columns)
 
+        print("Before: ", self.categorical_columns)
         try: 
             for col in self.nominal_columns:
                 try:self.categorical_columns.remove(col)
@@ -217,10 +218,11 @@ class PipelineControl(PipelinesConfiguration):
                 except:pass
         except: pass
 
+
         if len(self.categorical_columns) > 0:
             self.standard_pipeline = FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
-                        ("categorical", super().categorical_pipeline() ) 
+                        ("categorical", super().categorical_pipeline(categorical_columns = self.categorical_columns) ) 
                         ],
                         n_jobs=self.n_jobs)

@@ -111,7 +111,7 @@ class PipelinesConfiguration():
         self.exclude_columns = None
         self.datetime_columns = None
         self.include_columns = None
-        self.numerical_columns = None
+        self.numerical_columns: list = None
 
     def pre_pipeline(self, datetime_columns=None, exclude_columns=None, numerical_columns=None):
         self.exclude_columns = exclude_columns
@@ -264,7 +264,7 @@ class PipelinesConfiguration():
 
         return numeric_preprocessor
 
-    def categorical_pipeline(self):
+    def categorical_pipeline(self, categorical_columns):
         return Pipeline(
             steps=[
                 (
@@ -276,10 +276,10 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
-                                            "Nominal",
+                                        "Categorical",
                                             TypeInferenceTransformerNominal(
                                                 datetime_columns=self.datetime_columns,
-                                                name_transformer="Inference Nominal",
+                                                name_transformer="Inference Categorical",
                                             ),
                                         ),
                                         (
@@ -292,7 +292,8 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                make_column_selector(dtype_include=np.object_),
+                                categorical_columns
+                                # make_column_selector(dtype_include=np.object_),
                             ),
                         ],
                         remainder="drop",
@@ -503,10 +504,10 @@ class PipelinesConfiguration():
                         remainder="drop",
                     ),
                 ),
-                (
-                    "SpearmanCorrelationCheck",
-                    SpearmanCorrelationCheck(),
-                ),
+                # (
+                #     "SpearmanCorrelationCheck",
+                #     SpearmanCorrelationCheck(),
+                # ),
             ]
         )
 
