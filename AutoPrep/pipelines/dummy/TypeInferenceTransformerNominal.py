@@ -96,7 +96,6 @@ class TypeInferenceTransformerNominal(BaseEstimator, TransformerMixin):
 
         X_copy = X_copy.astype(str)
 
-        print(X_copy.dtypes, "\n")
 
         return X_copy
 

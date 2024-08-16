@@ -31,12 +31,10 @@ class NaNColumnCreator(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         X_transformed = X.apply(self.filter_nans)
-        self.column_names = X_transformed.columns
 
         return X_transformed
 
-    def get_feature_names(self, input_features=None):
-        return self.column_names
+
 
 
 
