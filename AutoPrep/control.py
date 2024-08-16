@@ -204,7 +204,6 @@ class PipelineControl(PipelinesConfiguration):
         """
         self.categorical_columns = list(df.select_dtypes(include=[object]).columns)
 
-        print("Before: ", self.categorical_columns)
         try: 
             for col in self.nominal_columns:
                 try:self.categorical_columns.remove(col)
