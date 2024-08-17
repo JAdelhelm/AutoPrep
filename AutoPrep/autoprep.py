@@ -82,6 +82,7 @@ class AutoPrep():
         pattern_recognition_columns: list = [],
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
+        activate_numeric_scaling = False
         ):
 
         self.datetime_columns = datetime_columns
@@ -92,6 +93,7 @@ class AutoPrep():
         self.pattern_recognition_columns = pattern_recognition_columns
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
+        self.activate_numeric_scaling = activate_numeric_scaling
 
         self._pipeline_structure = None
         self._fitted_pipeline = None
@@ -152,6 +154,7 @@ class AutoPrep():
             nominal_columns = self.nominal_columns,
             ordinal_columns = self.ordinal_columns,
             numerical_columns = self.numerical_columns,
+            activate_numeric_scaling = self.activate_numeric_scaling,
             pattern_recognition_columns = self.pattern_recognition_columns,
             n_jobs = self.n_jobs
         )

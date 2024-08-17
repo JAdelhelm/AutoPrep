@@ -7,7 +7,7 @@
 
 
 This pipeline focuses on data preprocessing, standardization, and cleaning, with additional features to identify univariate anomalies.
-<a href="https://html-preview.github.io/?url=https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/AutoPrep/visualization/Pipeline.html" target="_blank">Structure of Preprocessing Pipeline</a>
+<a href="https://html-preview.github.io/?url=https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/visualization/PipelineStructure.html" target="_blank">Structure of Preprocessing Pipeline</a>
 
 ```python
 pip install AutoPrep
