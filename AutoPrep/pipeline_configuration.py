@@ -200,7 +200,8 @@ class PipelinesConfiguration():
 
                                         ]
                                     ),
-                                    make_column_selector(dtype_include=np.number),
+                                    # make_column_selector(dtype_include=np.number),
+                                    self.numerical_columns
                                 ),
                             ],
                             remainder="passthrough",

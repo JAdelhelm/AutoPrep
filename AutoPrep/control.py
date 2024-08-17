@@ -72,7 +72,6 @@ class PipelineControl(PipelinesConfiguration):
         n_jobs: int = -1,
         activate_numeric_scaling: bool = False
                  ) -> None:
-        super().__init__()
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
         self.ordinal_columns = ordinal_columns
@@ -92,7 +91,7 @@ class PipelineControl(PipelinesConfiguration):
 
 
 
-    def standard_dtype_transformer(self, df) -> pd.DataFrame:
+    def pre_pipeline_type_infer(self, df) -> pd.DataFrame:
         """
             - Infers dtypes of Dataframe before inject it to the main pipeline.
             - Excludes specified columns from DataFrame.
@@ -106,12 +105,24 @@ class PipelineControl(PipelinesConfiguration):
 
         self.init_standard_pipeline()
         self.find_categorical_columns(df = df_transformed)
+        self.manage_numerical_columns(df = df_transformed)
+
+
 
         return  df_transformed
     
+    def manage_numerical_columns(self, df):
+        if self.numerical_columns is None:
+            self.numerical_columns = df.select_dtypes(include=[np.number]).columns.tolist()
+            try: self.numerical_columns = [col for col in self.numerical_columns if col not in self.nominal_columns]
+            except: pass
+            try: self.numerical_columns = [col for col in self.numerical_columns if col not in self.ordinal_columns]
+            except: pass
 
 
     def init_standard_pipeline(self):
+        
+
         self.standard_pipeline =  Pipeline(
             steps=[
                 (

@@ -20,7 +20,7 @@ data = pd.DataFrame(data)
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager"],
+    nominal_columns=["ID", "Name", "Is Manager", "Age"],
     datetime_columns=["Hire Date"],
     pattern_recognition_columns=["Name"],
     activate_numeric_scaling=True
@@ -29,4 +29,4 @@ pipeline = AutoPrep(
 X_output = pipeline.preprocess(df=data)
 
 # pipeline.get_profiling(X=data)
-pipeline.visualize_pipeline_structure_html()
+# pipeline.visualize_pipeline_structure_html()
