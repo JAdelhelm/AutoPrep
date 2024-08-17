@@ -196,10 +196,10 @@ class PipelinesConfiguration():
                                             "N",
                                             SimpleImputer(strategy="median", keep_empty_features=True),
                                         ),
-                                        (
-                                            "robust_scaler",
-                                            RobustScaler(),
-                                        ),
+                                        # (
+                                        #     "robust_scaler",
+                                        #     RobustScaler(),
+                                        # ),
                                     ]
                                 ),
                                 make_column_selector(dtype_include=np.number),
@@ -315,7 +315,7 @@ class PipelinesConfiguration():
                                         ("T", TimeSeriesImputer(impute_method="ffill")),
                                         # ("num_time_dates", TimeTransformer())
                                         ("num_time_dates", DateEncoder()),
-                                        ("robust_scaler", RobustScaler()),
+                                        # ("robust_scaler", RobustScaler()),
                                         # ("BinaryEnc",BinaryEncoder(handle_unknown="indicator")),
                                     ]
                                 ),

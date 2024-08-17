@@ -16,16 +16,19 @@ data = {
 data = pd.DataFrame(data)
 ########################################
 
-df_null = pd.DataFrame({'Name': [None, None, None]})
+df_with_dates = pd.DataFrame({
+    'DateColumn': ['2021-01-01', '2022-01-01', '2023-01-01'],
+    'Value': [100, 200, 300]
+})
+
 
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    # nominal_columns=["ID", "Name", "Is Manager"],
-    # datetime_columns=["Hire Date"],
+    datetime_columns=["DateColumn"],
     # pattern_recognition_columns=["Name"]
 )
-X_output = pipeline.preprocess(df=df_null)
+X_output = pipeline.preprocess(df=df_with_dates)
 
 # pipeline.get_profiling(X=data)
 pipeline.visualize_pipeline_structure_html()

@@ -80,10 +80,13 @@ class PipelineControl(PipelinesConfiguration):
         self.exclude_columns = exclude_columns
         self.n_jobs = n_jobs
 
-
+        self._all_columns = (self.nominal_columns + 
+                             self.ordinal_columns + 
+                             self.numerical_columns + 
+                             self.datetime_columns)
+        
         self.standard_pipeline = None
         self.categorical_columns = None
-
 
 
 
@@ -93,6 +96,8 @@ class PipelineControl(PipelinesConfiguration):
             - Excludes specified columns from DataFrame.
             - Find categorical columns that are not specified as parameter.
         """
+        self.column_check_input_parameters(df=df)
+
 
         pipeline_type_inference = super().pre_pipeline()
         df_transformed = pipeline_type_inference.fit_transform(df)
@@ -221,3 +226,29 @@ class PipelineControl(PipelinesConfiguration):
                         ("categorical", super().categorical_pipeline() ) 
                         ],
                         n_jobs=self.n_jobs)
+
+
+
+    def column_check_input_parameters(self, df):
+        """
+        Checks that all specified columns exist in the dataframe and that there are no duplicates.
+
+        Parameters:
+        -----------
+        df : pandas.DataFrame
+            The dataframe to validate against.
+
+        Raises:
+        -------
+        KeyError:
+            If any specified column is not found in the dataframe.
+        ValueError:
+            If duplicate columns are detected in the input parameters.
+        """
+        for col in self._all_columns:
+            if col not in df.columns:
+                raise KeyError(f"Column '{col}' not found in the dataframe.")
+
+        if len(self._all_columns) != len(set(self._all_columns)):
+            duplicate_columns = [col for col in set(self._all_columns) if self._all_columns.count(col) > 1]
+            raise ValueError(f"Duplicate columns found: {duplicate_columns}")
