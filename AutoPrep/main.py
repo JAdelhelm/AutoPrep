@@ -16,16 +16,16 @@ data = {
 data = pd.DataFrame(data)
 ########################################
 
-
+df_null = pd.DataFrame({'Name': [None, None, None]})
 
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager"],
+    # nominal_columns=["ID", "Name", "Is Manager"],
     # datetime_columns=["Hire Date"],
     # pattern_recognition_columns=["Name"]
 )
-X_output = pipeline.preprocess(df=data)
+X_output = pipeline.preprocess(df=df_null)
 
 # pipeline.get_profiling(X=data)
 pipeline.visualize_pipeline_structure_html()

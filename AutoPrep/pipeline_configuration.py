@@ -194,7 +194,7 @@ class PipelinesConfiguration():
                                     steps=[
                                         (
                                             "N",
-                                            SimpleImputer(strategy="median"),
+                                            SimpleImputer(strategy="median", keep_empty_features=True),
                                         ),
                                         (
                                             "robust_scaler",
