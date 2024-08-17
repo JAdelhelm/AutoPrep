@@ -30,16 +30,20 @@ class DateEncoder(TransformerMixin):
     def transform(self, X):
         dfs = []
         self.column_names = []
+        
         for column in X:
+            # Explicitly cast it again to datetime
+            X[column] = pd.to_datetime(X[column], errors='coerce')
+
             dt = X[column].dt
 
-            newcolumnnames = [
-                column + "_" + col for col in ["YEAR", "MONTH", "WKDAY", "HOUR", "MINUTE", "SECOND"]
+            new_column_names = [
+                column + "_" + col for col in ["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "WKDAY"]
             ]
             df_dt = pd.concat(
-                [dt.year, dt.month, dt.weekday, dt.hour, dt.minute, dt.second],
+                [dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday],
                 axis=1,
-                keys=newcolumnnames,
+                keys=new_column_names,
             )
 
             dfs.append(df_dt)

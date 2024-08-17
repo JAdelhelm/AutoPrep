@@ -39,7 +39,7 @@ except ImportError:
     from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
     from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
     from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+    from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
     from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
     from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
     from pipelines.timeseries.DateEncoder import DateEncoder
@@ -108,15 +108,12 @@ class PipelinesConfiguration():
         List of columns that should be dropped.
     """
     def __init__(self):
-        self.exclude_columns = None
-        self.datetime_columns = None
-        self.include_columns = None
-        self.numerical_columns: list = None
+        """
+        Inherits all attributes from PipelineControl
+        """
+        pass
 
-    def pre_pipeline(self, datetime_columns=None, exclude_columns=None, numerical_columns=None):
-        self.exclude_columns = exclude_columns
-        self.datetime_columns = datetime_columns
-        self.numerical_columns = numerical_columns
+    def pre_pipeline(self):
 
         original_preprocessor = Pipeline(
             steps=[
@@ -185,86 +182,176 @@ class PipelinesConfiguration():
         return nan_marker_preprocessor
 
     def numeric_pipeline(self):
-        numeric_preprocessor = Pipeline(
-            steps=[
-                (
-                    "Preprocessing_Numerical",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "numeric",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "N",
-                                            SimpleImputer(strategy="median"),
-                                        ),
-                                        (
-                                            "robust_scaler",
-                                            RobustScaler(),
-                                        ),
-                                    ]
-                                ),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                        ],
-                        remainder="passthrough",
-                        n_jobs=-1,
-                        verbose=True,
-                        verbose_feature_names_out=False
-                    ),
-                ),
-                (
-                    "Statistical methods",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "tukey",
-                                Pipeline(
-                                    steps=[
-                                        ("Tukey_impute", IterativeImputer(initial_strategy="median")),
-                                        ("tukey", TukeyTransformer(factor=1.5)),
-                                        ("tukey_total", TukeyTransformerTotal())
-                                    ]
-                                ),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                            (
-                                "z_mod",
-                                Pipeline(
-                                    steps=[
-                                        ("z_mod_impute", IterativeImputer(initial_strategy="median")),
-                                        ("z_mod", MedianAbsolutDeviation()),
-                                        ("z_mod_total", MedianAbsolutDeviationTotal())
-                                    ]
-                                ),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                            (
-                                "pass_cols",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "_pass_cols_",
-                                            "passthrough",
-                                        ),
-                                    ]
-                                ),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                        ],
-                        remainder="passthrough",
-                        n_jobs=-1,
-                        verbose=True,
-                        verbose_feature_names_out=False
-                    ),
-                ),
-            ]
-        )
+        if self.activate_numeric_scaling == False:
+            return  Pipeline(
+                steps=[
+                    (
+                        "Preprocessing_Numerical",
+                        ColumnTransformer(
+                            transformers=[
+                                (
+                                    "numeric",
+                                    Pipeline(
+                                        steps=[
+                                            (
+                                                "N",
+                                                SimpleImputer(strategy="median", keep_empty_features=True),
+                                            ),
 
-        return numeric_preprocessor
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                            ],
+                            remainder="passthrough",
+                            n_jobs=-1,
+                            verbose=True,
+                            verbose_feature_names_out=False
+                        ),
+                    ),
+                    (
+                        "Statistical methods",
+                        ColumnTransformer(
+                            transformers=[
+                                (
+                                    "tukey",
+                                    Pipeline(
+                                        steps=[
+                                            ("Tukey_impute", IterativeImputer(initial_strategy="median")),
+                                            ("tukey", TukeyTransformer(factor=1.5)),
+                                            ("tukey_total", TukeyTransformerTotal())
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                                (
+                                    "z_mod",
+                                    Pipeline(
+                                        steps=[
+                                            ("z_mod_impute", IterativeImputer(initial_strategy="median")),
+                                            ("z_mod", MedianAbsolutDeviation()),
+                                            ("z_mod_total", MedianAbsolutDeviationTotal())
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                                (
+                                    "pass_cols",
+                                    Pipeline(
+                                        steps=[
+                                            (
+                                                "_pass_cols_",
+                                                "passthrough",
+                                            ),
+                                            # (
+                                            #     "robust_scaler",
+                                            #     RobustScaler(),
+                                            # ),
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                            ],
+                            remainder="passthrough",
+                            n_jobs=-1,
+                            verbose=True,
+                            verbose_feature_names_out=False
+                        ),
+                    ),
+                ]
+            )
+        else:
+            return self.numeric_pipeline_2()
 
-    def categorical_pipeline(self, categorical_columns):
+
+
+    def numeric_pipeline_2(self):
+            return  Pipeline(
+                steps=[
+                    (
+                        "Preprocessing_Numerical",
+                        ColumnTransformer(
+                            transformers=[
+                                (
+                                    "numeric",
+                                    Pipeline(
+                                        steps=[
+                                            (
+                                                "N",
+                                                SimpleImputer(strategy="median", keep_empty_features=True),
+                                            ),
+
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                            ],
+                            remainder="passthrough",
+                            n_jobs=-1,
+                            verbose=True,
+                            verbose_feature_names_out=False
+                        ),
+                    ),
+                    (
+                        "Statistical methods",
+                        ColumnTransformer(
+                            transformers=[
+                                (
+                                    "tukey",
+                                    Pipeline(
+                                        steps=[
+                                            ("Tukey_impute", IterativeImputer(initial_strategy="median")),
+                                            ("tukey", TukeyTransformer(factor=1.5)),
+                                            ("tukey_total", TukeyTransformerTotal())
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                                (
+                                    "z_mod",
+                                    Pipeline(
+                                        steps=[
+                                            ("z_mod_impute", IterativeImputer(initial_strategy="median")),
+                                            ("z_mod", MedianAbsolutDeviation()),
+                                            ("z_mod_total", MedianAbsolutDeviationTotal())
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                                (
+                                    "pass_cols",
+                                    Pipeline(
+                                        steps=[
+                                            (
+                                                "_pass_cols_",
+                                                "passthrough",
+                                            ),
+                                            (
+                                                "robust_scaler",
+                                                RobustScaler(),
+                                            ),
+                                        ]
+                                    ),
+                                    make_column_selector(dtype_include=np.number),
+                                ),
+                            ],
+                            remainder="passthrough",
+                            n_jobs=-1,
+                            verbose=True,
+                            verbose_feature_names_out=False
+                        ),
+                    ),
+                ]
+            )
+
+
+
+
+
+
+
+
+    def categorical_pipeline(self):
         return Pipeline(
             steps=[
                 (
@@ -284,7 +371,7 @@ class PipelinesConfiguration():
                                         ),
                                         (
                                             "C",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),
                                         (
                                             "BinaryEnc",
@@ -292,7 +379,7 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                categorical_columns
+                                self.categorical_columns
                                 # make_column_selector(dtype_include=np.object_),
                             ),
                         ],
@@ -318,7 +405,7 @@ class PipelinesConfiguration():
                                         ("T", TimeSeriesImputer(impute_method="ffill")),
                                         # ("num_time_dates", TimeTransformer())
                                         ("num_time_dates", DateEncoder()),
-                                        ("robust_scaler", RobustScaler()),
+                                        # ("robust_scaler", RobustScaler()),
                                         # ("BinaryEnc",BinaryEncoder(handle_unknown="indicator")),
                                     ]
                                 ),
@@ -343,11 +430,9 @@ class PipelinesConfiguration():
         return timeseries_preprocessor
 
     def pattern_extraction(
-        self,
-        pattern_recognition_columns: list = None,
-        datetime_columns_pattern = None
+        self
     ):
-        if pattern_recognition_columns is None:
+        if self.pattern_recognition_columns is None:
             return  Pipeline(
                 steps=[
                     (
@@ -380,8 +465,8 @@ class PipelinesConfiguration():
                     (
                         "X_pattern",
                         TypeInferenceTransformerPattern(
-                            include_columns=pattern_recognition_columns,
-                            datetime_columns=datetime_columns_pattern,
+                            include_columns=self.pattern_recognition_columns,
+                            datetime_columns=self.datetime_columns,
                             name_transformer="Schema PatternExtraction",
                         ),
                     ),
@@ -395,7 +480,7 @@ class PipelinesConfiguration():
                                         steps=[
                                             (
                                                 "impute_pattern",
-                                                SimpleImputer(strategy="most_frequent"),
+                                                SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                             ),
                                             (
                                                 "pattern_extraction",
@@ -421,9 +506,7 @@ class PipelinesConfiguration():
 
 
     def nominal_pipeline(
-        self,
-        nominal_columns: list = None,
-    ):
+        self):
         return Pipeline(
             steps=[
                 (
@@ -435,8 +518,16 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
+                                            "Nominal Caster", 
+                                            TypeInferenceTransformerNominal(
+                                                datetime_columns=self.datetime_columns,
+                                                exclude_columns=self.exclude_columns,
+                                                nominal_columns=self.nominal_columns
+                                            )
+                                        ),
+                                        (
                                             "impute_nominal",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),                                        
                                         (
                                             "BinaryEnc",
@@ -444,7 +535,7 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                nominal_columns
+                                self.nominal_columns
                             )
                         ],
                         remainder="drop",  
@@ -457,10 +548,8 @@ class PipelinesConfiguration():
         )
 
     def ordinal_pipeline(
-        self,
-        ordinal_columns: list = None
-    ):
-        if len(ordinal_columns) == 0:
+        self    ):
+        if len(self.ordinal_columns) == 0:
             raise Exception("Ordinal columns are empty...")
         
         return Pipeline(
@@ -474,8 +563,16 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
+                                            "Ordinal Caster", 
+                                            TypeInferenceTransformerOrdinal(
+                                                datetime_columns=self.datetime_columns,
+                                                exclude_columns = self.exclude_columns,
+                                                ordinal_columns=self.ordinal_columns
+                                            )
+                                        ),
+                                        (
                                             "impute_ordinal",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),
                                         (
                                             "OrdinalEnc",
@@ -487,7 +584,7 @@ class PipelinesConfiguration():
                                     ]
                                 ),
                                 # make_column_selector(dtype_include=None)
-                                ordinal_columns
+                                self.ordinal_columns
                             )
                         ],
                         remainder="drop",

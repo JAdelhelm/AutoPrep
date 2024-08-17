@@ -57,8 +57,11 @@ class AutoPrep():
     drop_columns_no_variance : bool
         If set to True, all columns with zero standard deviation/variance will be removed.
 
-    n_jobsint, default=None
+    n_jobs: int, default=None
         Number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means using all processors. See Glossary for more details.
+
+    activate_numeric_scaling: bool
+        Activates scaling of numerical columns.    
 
     Attributes
     ----------
@@ -82,7 +85,10 @@ class AutoPrep():
         pattern_recognition_columns: list = [],
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
+        activate_numeric_scaling = False
         ):
+        from sklearn import set_config
+        set_config(transform_output="pandas")
 
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
@@ -92,6 +98,7 @@ class AutoPrep():
         self.pattern_recognition_columns = pattern_recognition_columns
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
+        self.activate_numeric_scaling = activate_numeric_scaling
 
         self._pipeline_structure = None
         self._fitted_pipeline = None
@@ -152,6 +159,7 @@ class AutoPrep():
             nominal_columns = self.nominal_columns,
             ordinal_columns = self.ordinal_columns,
             numerical_columns = self.numerical_columns,
+            activate_numeric_scaling = self.activate_numeric_scaling,
             pattern_recognition_columns = self.pattern_recognition_columns,
             n_jobs = self.n_jobs
         )

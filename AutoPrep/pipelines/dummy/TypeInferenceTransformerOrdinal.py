@@ -127,8 +127,10 @@ class TypeInferenceTransformerOrdinal(BaseEstimator, TransformerMixin):
 
         X_copy = self.infer_schema_X(X_copy=X_copy)
 
-        print(f"\n\nDtypes-Schema / Columns for {self.name_transformer}:\n")
+        print(f"\n\nDtypes-Schema / Columns {self.name_transformer}:\n")
         print(X_copy.dtypes, "\n")
+
+        X_copy = X_copy.astype(str)
 
         return X_copy
 

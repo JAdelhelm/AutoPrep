@@ -78,7 +78,15 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
         except:
             pass
 
-        for col in X_copy.columns:                
+        for col in X_copy.columns:
+            if X_copy[col].isna().all():
+                X_copy[col].fillna(np.nan)
+
+                print(f"The column: -- {col} -- only consists of missing values.")
+                print(X_copy[col].dtype)
+              
+                continue
+
 
             if X_copy[col].dtype == "object":
                 if self.datetime_columns is not None and col in self.datetime_columns:

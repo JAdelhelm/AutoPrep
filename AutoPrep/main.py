@@ -17,13 +17,14 @@ data = pd.DataFrame(data)
 ########################################
 
 
-
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
     nominal_columns=["ID", "Name", "Is Manager"],
-    # datetime_columns=["Hire Date"],
-    # pattern_recognition_columns=["Name"]
+    datetime_columns=["Hire Date"],
+    pattern_recognition_columns=["Name"],
+    activate_numeric_scaling=True
+
 )
 X_output = pipeline.preprocess(df=data)
 

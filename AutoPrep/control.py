@@ -69,7 +69,8 @@ class PipelineControl(PipelinesConfiguration):
         numerical_columns: list = None,
         pattern_recognition_columns: list = None,
         exclude_columns: list = None,
-        n_jobs: int = -1
+        n_jobs: int = -1,
+        activate_numeric_scaling: bool = False
                  ) -> None:
         super().__init__()
         self.datetime_columns = datetime_columns
@@ -79,11 +80,15 @@ class PipelineControl(PipelinesConfiguration):
         self.pattern_recognition_columns = pattern_recognition_columns
         self.exclude_columns = exclude_columns
         self.n_jobs = n_jobs
+        self.activate_numeric_scaling = activate_numeric_scaling
 
-
+        self._all_columns = (self.nominal_columns + 
+                             self.ordinal_columns + 
+                             self.numerical_columns + 
+                             self.datetime_columns)
+        
         self.standard_pipeline = None
         self.categorical_columns = None
-
 
 
 
@@ -93,12 +98,10 @@ class PipelineControl(PipelinesConfiguration):
             - Excludes specified columns from DataFrame.
             - Find categorical columns that are not specified as parameter.
         """
+        self.column_check_input_parameters(df=df)
 
-        pipeline_type_inference = super().pre_pipeline(
-                                    datetime_columns=self.datetime_columns,
-                                    exclude_columns=self.exclude_columns,
-                                    numerical_columns = self.numerical_columns
-        )
+
+        pipeline_type_inference = super().pre_pipeline()
         df_transformed = pipeline_type_inference.fit_transform(df)
 
         self.init_standard_pipeline()
@@ -160,9 +163,9 @@ class PipelineControl(PipelinesConfiguration):
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
-                        ("Nominal", super().nominal_pipeline(nominal_columns=self.nominal_columns)),
+                        ("Nominal", super().nominal_pipeline()),
                         ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction(pattern_recognition_columns=self.pattern_recognition_columns))
+                        ("PatternExtraction", super().pattern_extraction())
                     ],
                     n_jobs=self.n_jobs
                 )
@@ -170,9 +173,9 @@ class PipelineControl(PipelinesConfiguration):
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
-                        ("Ordinal", super().ordinal_pipeline(ordinal_columns=self.ordinal_columns)),
+                        ("Ordinal", super().ordinal_pipeline()),
                         ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction(pattern_recognition_columns=self.pattern_recognition_columns))
+                        ("PatternExtraction", super().pattern_extraction())
                     ],
                     n_jobs=self.n_jobs
                 )
@@ -180,10 +183,10 @@ class PipelineControl(PipelinesConfiguration):
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
-                        ("Nominal", super().nominal_pipeline(nominal_columns=self.nominal_columns)),
-                        ("Ordinal", super().ordinal_pipeline(ordinal_columns=self.ordinal_columns)),
+                        ("Nominal", super().nominal_pipeline()),
+                        ("Ordinal", super().ordinal_pipeline()),
                         ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction(pattern_recognition_columns=self.pattern_recognition_columns))
+                        ("PatternExtraction", super().pattern_extraction())
                     ],
                     n_jobs=self.n_jobs
                 )
@@ -222,6 +225,32 @@ class PipelineControl(PipelinesConfiguration):
             self.standard_pipeline = FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
-                        ("categorical", super().categorical_pipeline(categorical_columns = self.categorical_columns) ) 
+                        ("categorical", super().categorical_pipeline() ) 
                         ],
                         n_jobs=self.n_jobs)
+
+
+
+    def column_check_input_parameters(self, df):
+        """
+        Checks that all specified columns exist in the dataframe and that there are no duplicates.
+
+        Parameters:
+        -----------
+        df : pandas.DataFrame
+            The dataframe to validate against.
+
+        Raises:
+        -------
+        KeyError:
+            If any specified column is not found in the dataframe.
+        ValueError:
+            If duplicate columns are detected in the input parameters.
+        """
+        for col in self._all_columns:
+            if col not in df.columns:
+                raise KeyError(f"Column '{col}' not found in the dataframe.")
+
+        if len(self._all_columns) != len(set(self._all_columns)):
+            duplicate_columns = [col for col in set(self._all_columns) if self._all_columns.count(col) > 1]
+            raise ValueError(f"Duplicate columns found: {duplicate_columns}")
