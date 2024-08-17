@@ -371,7 +371,7 @@ class PipelinesConfiguration():
                                         ),
                                         (
                                             "C",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),
                                         (
                                             "BinaryEnc",
@@ -480,7 +480,7 @@ class PipelinesConfiguration():
                                         steps=[
                                             (
                                                 "impute_pattern",
-                                                SimpleImputer(strategy="most_frequent"),
+                                                SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                             ),
                                             (
                                                 "pattern_extraction",
@@ -527,7 +527,7 @@ class PipelinesConfiguration():
                                         ),
                                         (
                                             "impute_nominal",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),                                        
                                         (
                                             "BinaryEnc",
@@ -572,7 +572,7 @@ class PipelinesConfiguration():
                                         ),
                                         (
                                             "impute_ordinal",
-                                            SimpleImputer(strategy="most_frequent"),
+                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),
                                         (
                                             "OrdinalEnc",
