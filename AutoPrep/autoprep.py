@@ -22,8 +22,8 @@ from pathlib import Path
 
 try:
     from AutoPrep.autoprep.control import PipelineControl
-except ImportError:
-    from control import PipelineControl
+except:
+    from AutoPrep.control import PipelineControl
 # from pipeline_configuration import PipelinesConfiguration
 
 
@@ -155,12 +155,8 @@ class AutoPrep():
 
 
     def fit_pipeline_structure(self, df):
-        clone_pipe = self.pipeline_structure
 
-        # Debug print to ensure correct class instance
-        print(f"clone_pipe is an instance of: {type(clone_pipe)}")
-
-        df = clone_pipe.pre_pipeline_type_infer(df=df)
+        df = self.pipeline_structure.pre_pipeline_type_infer(df=df)
         self._df = df.copy(deep=True)
 
         self.pipeline_structure = self.pipeline_structure.pipeline_control()
