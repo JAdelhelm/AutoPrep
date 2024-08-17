@@ -33,13 +33,13 @@ class DateEncoder(TransformerMixin):
         for column in X:
             dt = X[column].dt
 
-            newcolumnnames = [
+            new_column_names = [
                 column + "_" + col for col in ["YEAR", "MONTH", "WKDAY", "HOUR", "MINUTE", "SECOND"]
             ]
             df_dt = pd.concat(
                 [dt.year, dt.month, dt.weekday, dt.hour, dt.minute, dt.second],
                 axis=1,
-                keys=newcolumnnames,
+                keys=new_column_names,
             )
 
             dfs.append(df_dt)

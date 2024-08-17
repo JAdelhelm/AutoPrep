@@ -39,7 +39,7 @@ except ImportError:
     from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
     from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
     from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+    from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
     from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
     from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
     from pipelines.timeseries.DateEncoder import DateEncoder
@@ -108,15 +108,12 @@ class PipelinesConfiguration():
         List of columns that should be dropped.
     """
     def __init__(self):
-        self.exclude_columns = None
-        self.datetime_columns = None
-        self.include_columns = None
-        self.numerical_columns: list = None
+        """
+        Inherits all attributes from PipelineControl
+        """
+        pass
 
-    def pre_pipeline(self, datetime_columns=None, exclude_columns=None, numerical_columns=None):
-        self.exclude_columns = exclude_columns
-        self.datetime_columns = datetime_columns
-        self.numerical_columns = numerical_columns
+    def pre_pipeline(self):
 
         original_preprocessor = Pipeline(
             steps=[
@@ -264,7 +261,7 @@ class PipelinesConfiguration():
 
         return numeric_preprocessor
 
-    def categorical_pipeline(self, categorical_columns):
+    def categorical_pipeline(self):
         return Pipeline(
             steps=[
                 (
@@ -292,7 +289,7 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                categorical_columns
+                                self.categorical_columns
                                 # make_column_selector(dtype_include=np.object_),
                             ),
                         ],
@@ -343,11 +340,9 @@ class PipelinesConfiguration():
         return timeseries_preprocessor
 
     def pattern_extraction(
-        self,
-        pattern_recognition_columns: list = None,
-        datetime_columns_pattern = None
+        self
     ):
-        if pattern_recognition_columns is None:
+        if self.pattern_recognition_columns is None:
             return  Pipeline(
                 steps=[
                     (
@@ -380,8 +375,8 @@ class PipelinesConfiguration():
                     (
                         "X_pattern",
                         TypeInferenceTransformerPattern(
-                            include_columns=pattern_recognition_columns,
-                            datetime_columns=datetime_columns_pattern,
+                            include_columns=self.pattern_recognition_columns,
+                            datetime_columns=self.datetime_columns,
                             name_transformer="Schema PatternExtraction",
                         ),
                     ),
@@ -421,9 +416,7 @@ class PipelinesConfiguration():
 
 
     def nominal_pipeline(
-        self,
-        nominal_columns: list = None,
-    ):
+        self):
         return Pipeline(
             steps=[
                 (
@@ -435,6 +428,14 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
+                                            "Nominal Caster", 
+                                            TypeInferenceTransformerNominal(
+                                                datetime_columns=self.datetime_columns,
+                                                exclude_columns=self.exclude_columns,
+                                                nominal_columns=self.nominal_columns
+                                            )
+                                        ),
+                                        (
                                             "impute_nominal",
                                             SimpleImputer(strategy="most_frequent"),
                                         ),                                        
@@ -444,7 +445,7 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                nominal_columns
+                                self.nominal_columns
                             )
                         ],
                         remainder="drop",  
@@ -457,10 +458,8 @@ class PipelinesConfiguration():
         )
 
     def ordinal_pipeline(
-        self,
-        ordinal_columns: list = None
-    ):
-        if len(ordinal_columns) == 0:
+        self    ):
+        if len(self.ordinal_columns) == 0:
             raise Exception("Ordinal columns are empty...")
         
         return Pipeline(
@@ -473,6 +472,14 @@ class PipelinesConfiguration():
                                 "ordinal",
                                 Pipeline(
                                     steps=[
+                                        (
+                                            "Ordinal Caster", 
+                                            TypeInferenceTransformerOrdinal(
+                                                datetime_columns=self.datetime_columns,
+                                                exclude_columns = self.exclude_columns,
+                                                ordinal_columns=self.ordinal_columns
+                                            )
+                                        ),
                                         (
                                             "impute_ordinal",
                                             SimpleImputer(strategy="most_frequent"),
@@ -487,7 +494,7 @@ class PipelinesConfiguration():
                                     ]
                                 ),
                                 # make_column_selector(dtype_include=None)
-                                ordinal_columns
+                                self.ordinal_columns
                             )
                         ],
                         remainder="drop",
