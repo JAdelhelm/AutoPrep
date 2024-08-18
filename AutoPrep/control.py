@@ -81,10 +81,6 @@ class PipelineControl(PipelinesConfiguration):
         self.n_jobs = n_jobs
         self.activate_numeric_scaling = activate_numeric_scaling
 
-        self._all_columns = (self.nominal_columns + 
-                             self.ordinal_columns + 
-                             self.numerical_columns + 
-                             self.datetime_columns)
         
         self.standard_pipeline = None
         self.categorical_columns = None
@@ -258,6 +254,25 @@ class PipelineControl(PipelinesConfiguration):
         ValueError:
             If duplicate columns are detected in the input parameters.
         """
+        # Check if inputs are lists
+        if self.datetime_columns is not None and not isinstance(self.datetime_columns, list):
+            raise TypeError("datetime_columns must be a list")
+        if self.nominal_columns is not None and not isinstance(self.nominal_columns, list):
+            raise TypeError("nominal_columns must be a list")
+        if self.ordinal_columns is not None and not isinstance(self.ordinal_columns, list):
+            raise TypeError("ordinal_columns must be a list")
+        if self.numerical_columns is not None and not isinstance(self.numerical_columns, list):
+            raise TypeError("numerical_columns must be a list")
+        if self.pattern_recognition_columns is not None and not isinstance(self.pattern_recognition_columns, list):
+            raise TypeError("pattern_recognition_columns must be a list")
+        if self.exclude_columns is not None and not isinstance(self.exclude_columns, list):
+            raise TypeError("exclude_columns must be a list")
+        
+        self._all_columns = (self.nominal_columns + 
+                             self.ordinal_columns + 
+                             self.numerical_columns + 
+                             self.datetime_columns)
+        
         for col in self._all_columns:
             if col not in df.columns:
                 raise KeyError(f"Column '{col}' not found in the dataframe.")

@@ -20,10 +20,15 @@ import itertools
 from pathlib import Path
 
 
-try:
+try: 
     from AutoPrep.autoprep.control import PipelineControl
 except:
-    from AutoPrep.control import PipelineControl
+    try:
+        from AutoPrep.control import PipelineControl
+    except:
+        from control import PipelineControl
+
+
 # from pipeline_configuration import PipelinesConfiguration
 
 

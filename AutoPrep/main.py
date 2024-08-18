@@ -20,9 +20,10 @@ data = pd.DataFrame(data)
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager", "Age"],
-    datetime_columns=["Hire Date"],
-    pattern_recognition_columns=["Name"],
+    nominal_columns="Name",
+    # nominal_columns=["ID", "Name", "Is Manager", "Age"],
+    # datetime_columns=["Hire Date"],
+    # pattern_recognition_columns=["Name"],
     # Change input parameter to string, then provide option for different scalers, e.g. standard, robust, etc.
     activate_numeric_scaling=True
 
