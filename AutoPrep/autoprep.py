@@ -65,8 +65,8 @@ class AutoPrep():
     n_jobs: int, default=None
         Number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means using all processors. See Glossary for more details.
 
-    activate_numeric_scaling: bool
-        Activates scaling of numerical columns.    
+    scaler_option_num: str
+        Numeric scaling options: 'standard', 'robust', 'minmax'   
 
     Attributes
     ----------
@@ -90,7 +90,7 @@ class AutoPrep():
         pattern_recognition_columns: list = [],
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
-        activate_numeric_scaling = False
+        scaler_option_num = "deactivate"
         ):
         from sklearn import set_config
         set_config(transform_output="pandas")
@@ -103,14 +103,14 @@ class AutoPrep():
         self.pattern_recognition_columns = pattern_recognition_columns
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
-        self.activate_numeric_scaling = activate_numeric_scaling
+        self.scaler_option_num = scaler_option_num.lower()
 
         self.pipeline_structure = PipelineControl(
             datetime_columns = self.datetime_columns,
             nominal_columns = self.nominal_columns,
             ordinal_columns = self.ordinal_columns,
             numerical_columns = self.numerical_columns,
-            activate_numeric_scaling = self.activate_numeric_scaling,
+            scaler_option_num = self.scaler_option_num,
             pattern_recognition_columns = self.pattern_recognition_columns,
             n_jobs = self.n_jobs
         )

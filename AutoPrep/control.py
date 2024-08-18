@@ -70,7 +70,7 @@ class PipelineControl(PipelinesConfiguration):
         pattern_recognition_columns: list = None,
         exclude_columns: list = None,
         n_jobs: int = -1,
-        activate_numeric_scaling: bool = False
+        scaler_option_num: str = "standard"
                  ) -> None:
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
@@ -79,7 +79,7 @@ class PipelineControl(PipelinesConfiguration):
         self.pattern_recognition_columns = pattern_recognition_columns
         self.exclude_columns = exclude_columns
         self.n_jobs = n_jobs
-        self.activate_numeric_scaling = activate_numeric_scaling
+        self.scaler_option_num = scaler_option_num
 
         
         self.standard_pipeline = None
