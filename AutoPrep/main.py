@@ -23,7 +23,7 @@ pipeline = AutoPrep(
     nominal_columns=["ID", "Name", "Is Manager", "Age"],
     datetime_columns=["Hire Date"],
     pattern_recognition_columns=["Name"],
-    scaler_option_num="standard"
+    scaler_option_num="standard",
 )
 X_output = pipeline.preprocess(df=data)
 
