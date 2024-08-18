@@ -13,65 +13,37 @@ Imports:
     pandas as pd
     sklearn and other relevant libraries for data preprocessing and transformation.
 """
-
 import numpy as np
 import pandas as pd
-try:
-    from AutoPrep.pipelines.statistical.TukeyTransformer import TukeyTransformer
-    from AutoPrep.pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
-    from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
-    from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
-    from AutoPrep.pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-    from AutoPrep.pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
-    from AutoPrep.pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
-    from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
-    from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
-    from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-    from AutoPrep.pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
-except ImportError:
-    from pipelines.statistical.TukeyTransformer import TukeyTransformer
-    from pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
-    from pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
-    from pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
-    from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-    from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
-    from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-    from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
-    from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
-    from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
-    from pipelines.timeseries.DateEncoder import DateEncoder
-    from pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
-    from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-    from pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
-
-
-
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer, MissingIndicator
 from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, LabelEncoder, OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import  OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, KNNImputer
 from category_encoders import BinaryEncoder
-from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
-from sklearn import set_config
-import warnings
-import itertools
-try: 
-    from ydata_profiling import ProfileReport
-except:
-    print("For Data profiling install ydata_profiling...")
-set_config(transform_output="pandas")
-
+from pipelines.statistical.TukeyTransformer import TukeyTransformer
+from pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
+from pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
+from pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
+from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
+from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
+from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
+from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
+from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
+from pipelines.timeseries.DateEncoder import DateEncoder
+from pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
+from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
+from pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
 
 class PipelinesConfiguration():
     """
-    The PipelinesConfiguration class represents the class to configure pipelines for data preprocessing.
+    The PipelinesConfiguration class represents the class 
+    to configure pipelines for data preprocessing.
 
-    There are different SchemaTransformer, to handle different datatypes as input.
+    There are different SchemaTransformer, 
+    to handle different datatypes as input.
 
     Methods
     -------
@@ -90,7 +62,8 @@ class PipelinesConfiguration():
     timeseries_pipeline():
         Creates a pipeline for preprocessing timeseries data.
 
-    pattern_extraction(pattern_recognition_columns=None, datetime_columns_pattern=None, deactivate_pattern_recognition=False):
+    pattern_extraction(pattern_recognition_columns=None, 
+    datetime_columns_pattern=None, deactivate_pattern_recognition=False):
         Creates a pipeline to extract patterns from categorical data.
 
     nominal_pipeline(nominal_columns=None, datetime_columns=None):
@@ -107,11 +80,28 @@ class PipelinesConfiguration():
     exclude_columns : list
         List of columns that should be dropped.
     """
-    def __init__(self):
-        """
-        Inherits all attributes from PipelineControl
-        """
-        pass
+    def __init__(self,
+        datetime_columns: list = None,
+        nominal_columns: list = None,
+        ordinal_columns: list = None,
+        numerical_columns: list = None,
+        pattern_recognition_columns: list = None,
+        exclude_columns: list = None,
+        n_jobs: int = -1,
+        scaler_option_num: str = "standard"
+                 ) -> None:
+        self.datetime_columns = datetime_columns
+        self.nominal_columns = nominal_columns
+        self.ordinal_columns = ordinal_columns
+        self.numerical_columns = numerical_columns
+        self.pattern_recognition_columns = pattern_recognition_columns
+        self.exclude_columns = exclude_columns
+        self.n_jobs = n_jobs
+        self.scaler_option_num = scaler_option_num        
+        self.standard_pipeline = None
+        self.categorical_columns = None
+
+
 
     def pre_pipeline(self):
 
@@ -197,7 +187,6 @@ class PipelinesConfiguration():
                                                 "N",
                                                 SimpleImputer(strategy="median", keep_empty_features=True),
                                             ),
-
                                         ]
                                     ),
                                     # make_column_selector(dtype_include=np.number),
@@ -561,8 +550,6 @@ class PipelinesConfiguration():
 
     def ordinal_pipeline(
         self    ):
-        if len(self.ordinal_columns) == 0:
-            raise Exception("Ordinal columns are empty...")
         
         return Pipeline(
             steps=[
@@ -609,6 +596,39 @@ class PipelinesConfiguration():
             ]
         )
     
+    def init_standard_pipeline(self): 
+        self.standard_pipeline =  Pipeline(
+            steps=[
+                (
+                    "Standard Preprocessing",
+                    ColumnTransformer(
+                        transformers=[
+                            (
+                                "numerical",
+                                self.numeric_pipeline(),
+                                make_column_selector(dtype_include=np.number),
+                            ),
+                            (
+                                "date",
+                                self.timeseries_pipeline(),
+                                make_column_selector(
+                                    dtype_include=(
+                                        np.dtype("datetime64[ns]"),
+                                        np.datetime64,
+                                        "datetimetz",
+                                    )
+                                ),
+                            ),
+                            
+                        ],
+                        remainder="drop",
+                        n_jobs=self.n_jobs,
+                        verbose=True,
+                    ),
+                ),
+                
+            ]
+        )    
 class XPatternDropper():
     def __init__(self):
         pass

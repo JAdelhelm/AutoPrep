@@ -15,13 +15,9 @@ try:
     from ydata_profiling import ProfileReport
 except ImportError:
     print("ydata_profiling not found...")
-try: 
-    from AutoPrep.autoprep.control import PipelineControl
-except ImportError:
-    try:
-        from AutoPrep.control import PipelineControl
-    except ImportError:
-        from control import PipelineControl
+
+from control import PipelineControl
+
 class AutoPrep():
     """
     The AutoPrep (Automated Preprocessing) class represents the control class/main
@@ -149,8 +145,14 @@ class AutoPrep():
         """
         Fits pre defined automated pipeline structure.
         """
+        self.pipeline_structure.column_check_input_parameters(df=df)
 
-        df = self.pipeline_structure.pre_pipeline_type_infer(df=df)
+        df = self.pipeline_structure.pre_pipeline().fit_transform(X = df)
+
+        self.pipeline_structure.init_standard_pipeline()
+        self.pipeline_structure.find_categorical_columns(df = df)
+        self.pipeline_structure.manage_numerical_columns(df = df)
+
         self._df = df.copy(deep=True)
 
         self.pipeline_structure = self.pipeline_structure.pipeline_control()
@@ -161,6 +163,7 @@ class AutoPrep():
             raise TypeError("Did you specify datetime columns?") from exc
         except Exception as e:
             raise e
+            
         
     def remove_excluded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """

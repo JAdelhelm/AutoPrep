@@ -14,26 +14,12 @@ from category_encoders import BinaryEncoder
 
 
 from sklearn.utils import estimator_html_repr
-
-
-# import pdfkit
-
-# Activate if you use PyTorch algorithms
-# import torch
-try:
-    from AutoPrep.pipeline_configuration import PipelinesConfiguration
-    from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-
-except ImportError:
-    from pipeline_configuration import PipelinesConfiguration
-    from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-
-
+from pipeline_configuration import PipelinesConfiguration
 
 class PipelineControl(PipelinesConfiguration):
     """
-    The ConfigurationControl class extends PipelinesConfiguration and manages the configuration 
-    of preprocessing pipelines for anomaly detection.
+    The PipelineControl class inherits all pipeline configurations
+    and methods from the PipelinesConfiguration class.
 
     Parameters
     ----------
@@ -72,40 +58,18 @@ class PipelineControl(PipelinesConfiguration):
         n_jobs: int = -1,
         scaler_option_num: str = "standard"
                  ) -> None:
-        self.datetime_columns = datetime_columns
-        self.nominal_columns = nominal_columns
-        self.ordinal_columns = ordinal_columns
-        self.numerical_columns = numerical_columns
-        self.pattern_recognition_columns = pattern_recognition_columns
-        self.exclude_columns = exclude_columns
-        self.n_jobs = n_jobs
-        self.scaler_option_num = scaler_option_num
-
-        
-        self.standard_pipeline = None
-        self.categorical_columns = None
+        super().__init__(
+            datetime_columns=datetime_columns,
+            nominal_columns=nominal_columns,
+            ordinal_columns=ordinal_columns,
+            numerical_columns=numerical_columns,
+            pattern_recognition_columns=pattern_recognition_columns,
+            exclude_columns=exclude_columns,
+            n_jobs=n_jobs,
+            scaler_option_num=scaler_option_num
+        )
 
 
-
-    def pre_pipeline_type_infer(self, df) -> pd.DataFrame:
-        """
-            - Infers dtypes of Dataframe before inject it to the main pipeline.
-            - Excludes specified columns from DataFrame.
-            - Find categorical columns that are not specified as parameter.
-        """
-        self.column_check_input_parameters(df=df)
-
-
-        pipeline_type_inference = super().pre_pipeline()
-        df_transformed = pipeline_type_inference.fit_transform(df)
-
-        self.init_standard_pipeline()
-        self.find_categorical_columns(df = df_transformed)
-        self.manage_numerical_columns(df = df_transformed)
-
-
-
-        return  df_transformed
     
     def manage_numerical_columns(self, df):
         if self.numerical_columns is None:
@@ -114,44 +78,6 @@ class PipelineControl(PipelinesConfiguration):
             except: pass
             try: self.numerical_columns = [col for col in self.numerical_columns if col not in self.ordinal_columns]
             except: pass
-
-
-    def init_standard_pipeline(self):
-        
-
-        self.standard_pipeline =  Pipeline(
-            steps=[
-                (
-                    "Standard Preprocessing",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "numerical",
-                                super().numeric_pipeline(),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                            (
-                                "date",
-                                super().timeseries_pipeline(),
-                                make_column_selector(
-                                    dtype_include=(
-                                        np.dtype("datetime64[ns]"),
-                                        np.datetime64,
-                                        "datetimetz",
-                                    )
-                                ),
-                            ),
-                            
-                        ],
-                        remainder="drop",
-                        n_jobs=self.n_jobs,
-                        verbose=True,
-                    ),
-                ),
-                
-            ]
-        )
-
 
     def pipeline_control(self):
         """
@@ -199,9 +125,6 @@ class PipelineControl(PipelinesConfiguration):
                 )
             
         return self.standard_pipeline
-
-
-
 
 
     def find_categorical_columns(self, df):
