@@ -52,7 +52,7 @@ except ImportError:
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer, MissingIndicator
 from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder, LabelEncoder, OrdinalEncoder, RobustScaler
+from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder, LabelEncoder, OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, KNNImputer
 from category_encoders import BinaryEncoder
@@ -182,7 +182,7 @@ class PipelinesConfiguration():
         return nan_marker_preprocessor
 
     def numeric_pipeline(self):
-        if self.activate_numeric_scaling == False:
+        if self.scaler_option_num == "deactivate":
             return  Pipeline(
                 steps=[
                     (
@@ -200,7 +200,8 @@ class PipelinesConfiguration():
 
                                         ]
                                     ),
-                                    make_column_selector(dtype_include=np.number),
+                                    # make_column_selector(dtype_include=np.number),
+                                    self.numerical_columns
                                 ),
                             ],
                             remainder="passthrough",
@@ -266,6 +267,16 @@ class PipelinesConfiguration():
 
 
     def numeric_pipeline_2(self):
+            self.scaler_pick = StandardScaler()
+
+            if self.scaler_option_num == "standard": self.scaler_pick = StandardScaler()
+            elif self.scaler_option_num == "robust": self.scaler_pick = RobustScaler()
+            elif self.scaler_option_num == "minmax": self.scaler_pick = MinMaxScaler()
+
+            if self.scaler_option_num not in ["standard", "robust", "minmax"]:
+                raise ValueError("No valid scaler option picked!")
+
+
             return  Pipeline(
                 steps=[
                     (
@@ -327,8 +338,9 @@ class PipelinesConfiguration():
                                                 "passthrough",
                                             ),
                                             (
-                                                "robust_scaler",
-                                                RobustScaler(),
+                                                "scaler",
+                                                # RobustScaler(),
+                                                self.scaler_pick
                                             ),
                                         ]
                                     ),

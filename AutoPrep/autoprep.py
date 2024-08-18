@@ -20,10 +20,15 @@ import itertools
 from pathlib import Path
 
 
-try:
-    from AutoPrep.control import PipelineControl
-except ImportError:
-    from control import PipelineControl
+try: 
+    from AutoPrep.autoprep.control import PipelineControl
+except:
+    try:
+        from AutoPrep.control import PipelineControl
+    except:
+        from control import PipelineControl
+
+
 # from pipeline_configuration import PipelinesConfiguration
 
 
@@ -60,8 +65,8 @@ class AutoPrep():
     n_jobs: int, default=None
         Number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means using all processors. See Glossary for more details.
 
-    activate_numeric_scaling: bool
-        Activates scaling of numerical columns.    
+    scaler_option_num: str
+        Numeric scaling options: 'standard', 'robust', 'minmax'   
 
     Attributes
     ----------
@@ -85,7 +90,7 @@ class AutoPrep():
         pattern_recognition_columns: list = [],
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
-        activate_numeric_scaling = False
+        scaler_option_num = "deactivate"
         ):
         from sklearn import set_config
         set_config(transform_output="pandas")
@@ -98,9 +103,17 @@ class AutoPrep():
         self.pattern_recognition_columns = pattern_recognition_columns
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
-        self.activate_numeric_scaling = activate_numeric_scaling
+        self.scaler_option_num = scaler_option_num.lower()
 
-        self._pipeline_structure = None
+        self.pipeline_structure = PipelineControl(
+            datetime_columns = self.datetime_columns,
+            nominal_columns = self.nominal_columns,
+            ordinal_columns = self.ordinal_columns,
+            numerical_columns = self.numerical_columns,
+            scaler_option_num = self.scaler_option_num,
+            pattern_recognition_columns = self.pattern_recognition_columns,
+            n_jobs = self.n_jobs
+        )
         self._fitted_pipeline = None
 
         self._df = None
@@ -115,14 +128,7 @@ class AutoPrep():
             raise ValueError("New value of pipeline has to be an object of type Dataframe!")
         self._df = new_df
 
-    @property
-    def pipeline_structure(self):
-        return self._pipeline_structure   
-    @pipeline_structure.setter
-    def pipeline_structure(self, new_pipeline):
-        if isinstance(new_pipeline, Pipeline) is False:
-            raise ValueError("New value of pipeline has to be an object of type Pipeline!")
-        self._pipeline_structure = new_pipeline
+
 
 
     @property
@@ -154,23 +160,14 @@ class AutoPrep():
 
 
     def fit_pipeline_structure(self, df):
-        self._pipeline_structure = PipelineControl(
-            datetime_columns = self.datetime_columns,
-            nominal_columns = self.nominal_columns,
-            ordinal_columns = self.ordinal_columns,
-            numerical_columns = self.numerical_columns,
-            activate_numeric_scaling = self.activate_numeric_scaling,
-            pattern_recognition_columns = self.pattern_recognition_columns,
-            n_jobs = self.n_jobs
-        )
 
-        df = self._pipeline_structure.standard_dtype_transformer(df=df)
+        df = self.pipeline_structure.pre_pipeline_type_infer(df=df)
         self._df = df.copy(deep=True)
 
-        self._pipeline_structure = self._pipeline_structure.pipeline_control()
+        self.pipeline_structure = self.pipeline_structure.pipeline_control()
 
         try:
-            return self._pipeline_structure.fit(df)
+            return self.pipeline_structure.fit(df)
         except TypeError as e:
             raise TypeError(f"{e}\n\n\nDid you specified datetime columns?")
         

@@ -20,11 +20,10 @@ data = pd.DataFrame(data)
 from autoprep import AutoPrep
 
 pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager"],
+    nominal_columns=["ID", "Name", "Is Manager", "Age"],
     datetime_columns=["Hire Date"],
     pattern_recognition_columns=["Name"],
-    activate_numeric_scaling=True
-
+    scaler_option_num="standard"
 )
 X_output = pipeline.preprocess(df=data)
 
