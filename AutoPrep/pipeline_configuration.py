@@ -52,7 +52,7 @@ except ImportError:
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer, MissingIndicator
 from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder, LabelEncoder, OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, LabelEncoder, OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, KNNImputer
 from category_encoders import BinaryEncoder
@@ -267,94 +267,94 @@ class PipelinesConfiguration():
 
 
     def numeric_pipeline_2(self):
-            self.scaler_pick = StandardScaler()
+        self.scaler_pick = StandardScaler()
 
-            if self.scaler_option_num == "standard": self.scaler_pick = StandardScaler()
-            elif self.scaler_option_num == "robust": self.scaler_pick = RobustScaler()
-            elif self.scaler_option_num == "minmax": self.scaler_pick = MinMaxScaler()
+        if self.scaler_option_num == "standard": self.scaler_pick = StandardScaler()
+        elif self.scaler_option_num == "robust": self.scaler_pick = RobustScaler()
+        elif self.scaler_option_num == "minmax": self.scaler_pick = MinMaxScaler()
 
-            if self.scaler_option_num not in ["standard", "robust", "minmax"]:
-                raise ValueError("No valid scaler option picked!")
+        if self.scaler_option_num not in ["standard", "robust", "minmax"]:
+            raise ValueError("No valid scaler option picked!")
 
 
-            return  Pipeline(
-                steps=[
-                    (
-                        "Preprocessing_Numerical",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "numeric",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "N",
-                                                SimpleImputer(strategy="median", keep_empty_features=True),
-                                            ),
+        return  Pipeline(
+            steps=[
+                (
+                    "Preprocessing_Numerical",
+                    ColumnTransformer(
+                        transformers=[
+                            (
+                                "numeric",
+                                Pipeline(
+                                    steps=[
+                                        (
+                                            "N",
+                                            SimpleImputer(strategy="median", keep_empty_features=True),
+                                        ),
 
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
+                                    ]
                                 ),
-                            ],
-                            remainder="passthrough",
-                            n_jobs=-1,
-                            verbose=True,
-                            verbose_feature_names_out=False
-                        ),
+                                make_column_selector(dtype_include=np.number),
+                            ),
+                        ],
+                        remainder="passthrough",
+                        n_jobs=-1,
+                        verbose=True,
+                        verbose_feature_names_out=False
                     ),
-                    (
-                        "Statistical methods",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "tukey",
-                                    Pipeline(
-                                        steps=[
-                                            ("Tukey_impute", IterativeImputer(initial_strategy="median")),
-                                            ("tukey", TukeyTransformer(factor=1.5)),
-                                            ("tukey_total", TukeyTransformerTotal())
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
+                ),
+                (
+                    "Statistical methods",
+                    ColumnTransformer(
+                        transformers=[
+                            (
+                                "tukey",
+                                Pipeline(
+                                    steps=[
+                                        ("Tukey_impute", IterativeImputer(initial_strategy="median")),
+                                        ("tukey", TukeyTransformer(factor=1.5)),
+                                        ("tukey_total", TukeyTransformerTotal())
+                                    ]
                                 ),
-                                (
-                                    "z_mod",
-                                    Pipeline(
-                                        steps=[
-                                            ("z_mod_impute", IterativeImputer(initial_strategy="median")),
-                                            ("z_mod", MedianAbsolutDeviation()),
-                                            ("z_mod_total", MedianAbsolutDeviationTotal())
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
+                                make_column_selector(dtype_include=np.number),
+                            ),
+                            (
+                                "z_mod",
+                                Pipeline(
+                                    steps=[
+                                        ("z_mod_impute", IterativeImputer(initial_strategy="median")),
+                                        ("z_mod", MedianAbsolutDeviation()),
+                                        ("z_mod_total", MedianAbsolutDeviationTotal())
+                                    ]
                                 ),
-                                (
-                                    "pass_cols",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "_pass_cols_",
-                                                "passthrough",
-                                            ),
-                                            (
-                                                "scaler",
-                                                # RobustScaler(),
-                                                self.scaler_pick
-                                            ),
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
+                                make_column_selector(dtype_include=np.number),
+                            ),
+                            (
+                                "pass_cols",
+                                Pipeline(
+                                    steps=[
+                                        (
+                                            "_pass_cols_",
+                                            "passthrough",
+                                        ),
+                                        (
+                                            "scaler",
+                                            # RobustScaler(),
+                                            self.scaler_pick
+                                        ),
+                                    ]
                                 ),
-                            ],
-                            remainder="passthrough",
-                            n_jobs=-1,
-                            verbose=True,
-                            verbose_feature_names_out=False
-                        ),
+                                make_column_selector(dtype_include=np.number),
+                            ),
+                        ],
+                        remainder="passthrough",
+                        n_jobs=-1,
+                        verbose=True,
+                        verbose_feature_names_out=False
                     ),
-                ]
-            )
+                ),
+            ]
+        )
 
 
 
@@ -608,21 +608,13 @@ class PipelinesConfiguration():
                 # ),
             ]
         )
-
-
-
-
-
     
 class XPatternDropper():
     def __init__(self):
         pass
 
-    def fit(self, X, y=None):
+    def fit(self, df, y=None):
         return self
 
-    def transform(self, X, y=None):
-        return X[[]]
-
-
- 
+    def transform(self, df, y=None):
+        return df[[]]
