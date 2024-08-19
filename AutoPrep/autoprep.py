@@ -83,28 +83,13 @@ class AutoPrep:
         self.datetime_columns = datetime_columns if datetime_columns is not None else []
         self.nominal_columns = nominal_columns if nominal_columns is not None else []
         self.ordinal_columns = ordinal_columns if ordinal_columns is not None else []
-        self.numerical_columns = (
-            numerical_columns if numerical_columns is not None else []
-        )
+        self.numerical_columns = numerical_columns if numerical_columns is not None else []
         self.exclude_columns = exclude_columns if exclude_columns is not None else []
-        self.pattern_recognition_columns = (
-            pattern_recognition_columns
-            if pattern_recognition_columns is not None
-            else []
-        )
+        self.pattern_recognition_columns = pattern_recognition_columns if pattern_recognition_columns is not None else []
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
         self.scaler_option_num = scaler_option_num.lower()
 
-        self.pipeline_structure = PipelineControl(
-            datetime_columns=self.datetime_columns,
-            nominal_columns=self.nominal_columns,
-            ordinal_columns=self.ordinal_columns,
-            numerical_columns=self.numerical_columns,
-            scaler_option_num=self.scaler_option_num,
-            pattern_recognition_columns=self.pattern_recognition_columns,
-            n_jobs=self.n_jobs,
-        )
         self._fitted_pipeline = None
         self._df = None
         self._df_preprocessed = None
@@ -155,6 +140,16 @@ class AutoPrep:
         """
         Fits pre defined automated pipeline structure.
         """
+        self.pipeline_structure = PipelineControl(
+            datetime_columns=self.datetime_columns,
+            nominal_columns=self.nominal_columns,
+            ordinal_columns=self.ordinal_columns,
+            numerical_columns=self.numerical_columns,
+            scaler_option_num=self.scaler_option_num,
+            pattern_recognition_columns=self.pattern_recognition_columns,
+            n_jobs=self.n_jobs,
+        )
+
         self.pipeline_structure.column_check_input_parameters(df=df)
 
         df = self.pipeline_structure.pre_pipeline().fit_transform(X=df)
@@ -261,14 +256,3 @@ class AutoPrep:
         with open(file=f"{filename}.html", mode="w", encoding="utf-8") as f:
             f.write(estimator_html_repr(self.pipeline_structure))
             f.close()
-
-
-class DatetimeException(Exception):
-    """
-    Exception raised for errors in the datetime handling in the pipeline.
-
-    Attributes
-    ----------
-    message : str
-        Explanation of the error.
-    """
