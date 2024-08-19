@@ -14,7 +14,9 @@ from category_encoders import BinaryEncoder
 
 
 from sklearn.utils import estimator_html_repr
-from pipeline_configuration import PipelinesConfiguration
+
+from AutoPrep.pipeline_configuration import PipelinesConfiguration
+
 
 class PipelineControl(PipelinesConfiguration):
     """

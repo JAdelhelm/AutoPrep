@@ -22,20 +22,20 @@ from sklearn.preprocessing import  OrdinalEncoder, RobustScaler, StandardScaler,
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, KNNImputer
 from category_encoders import BinaryEncoder
-from pipelines.statistical.TukeyTransformer import TukeyTransformer
-from pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
-from pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
-from pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
-from pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-from pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
-from pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-from pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
-from pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
-from pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
-from pipelines.timeseries.DateEncoder import DateEncoder
-from pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
-from pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-from pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
+from AutoPrep.pipelines.statistical.TukeyTransformer import TukeyTransformer
+from AutoPrep.pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
+from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
+from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
+from AutoPrep.pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
+from AutoPrep.pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
+from AutoPrep.pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
+from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
+from AutoPrep.pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
+from AutoPrep.pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
+from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
+from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
+from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
+from AutoPrep.pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
 
 class PipelinesConfiguration():
     """

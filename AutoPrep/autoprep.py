@@ -5,20 +5,24 @@ It integrates various preprocessing tasks such as handling datetime conversions,
 transforming categorical data, scaling numerical features, and removing unnecessary columns, 
 ensuring that the input dataset is prepared for downstream machine learning tasks.
 """
+from AutoPrep.control import PipelineControl
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
-from sklearn.utils import estimator_html_repr
+import pandas as pd
 from sklearn import set_config
+from sklearn.utils import estimator_html_repr
+
 set_config(transform_output="pandas")
 try:
     from ydata_profiling import ProfileReport
 except ImportError:
     print("ydata_profiling not found...")
 
-from control import PipelineControl
 
-class AutoPrep():
+
+
+class AutoPrep:
     """
     The AutoPrep (Automated Preprocessing) class represents the control class/main
     for managing and executing configurated pipelines.
@@ -49,7 +53,7 @@ class AutoPrep():
         -1 means using all processors. See Glossary for more details.
 
     scaler_option_num: str
-        Numeric scaling options: 'standard', 'robust', 'minmax'   
+        Numeric scaling options: 'standard', 'robust', 'minmax'
 
     Attributes
     ----------
@@ -63,6 +67,7 @@ class AutoPrep():
         The fitted pipeline.
 
     """
+
     def __init__(
         self,
         datetime_columns: list = None,
@@ -73,25 +78,32 @@ class AutoPrep():
         pattern_recognition_columns: list = None,
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
-        scaler_option_num = "deactivate"
-        ):
+        scaler_option_num="deactivate",
+    ):
         self.datetime_columns = datetime_columns if datetime_columns is not None else []
         self.nominal_columns = nominal_columns if nominal_columns is not None else []
         self.ordinal_columns = ordinal_columns if ordinal_columns is not None else []
-        self.numerical_columns = numerical_columns if numerical_columns is not None else []
+        self.numerical_columns = (
+            numerical_columns if numerical_columns is not None else []
+        )
         self.exclude_columns = exclude_columns if exclude_columns is not None else []
-        self.pattern_recognition_columns = pattern_recognition_columns if pattern_recognition_columns is not None else []
+        self.pattern_recognition_columns = (
+            pattern_recognition_columns
+            if pattern_recognition_columns is not None
+            else []
+        )
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
         self.scaler_option_num = scaler_option_num.lower()
+
         self.pipeline_structure = PipelineControl(
-            datetime_columns = self.datetime_columns,
-            nominal_columns = self.nominal_columns,
-            ordinal_columns = self.ordinal_columns,
-            numerical_columns = self.numerical_columns,
-            scaler_option_num = self.scaler_option_num,
-            pattern_recognition_columns = self.pattern_recognition_columns,
-            n_jobs = self.n_jobs
+            datetime_columns=self.datetime_columns,
+            nominal_columns=self.nominal_columns,
+            ordinal_columns=self.ordinal_columns,
+            numerical_columns=self.numerical_columns,
+            scaler_option_num=self.scaler_option_num,
+            pattern_recognition_columns=self.pattern_recognition_columns,
+            n_jobs=self.n_jobs,
         )
         self._fitted_pipeline = None
         self._df = None
@@ -100,20 +112,20 @@ class AutoPrep():
     @property
     def df(self):
         return self._df
+
     @df.setter
     def df(self, new_df):
-        if isinstance(new_df,pd.DataFrame) is False:
-            raise ValueError("New value of pipeline has to be an object of type Dataframe!")
+        if isinstance(new_df, pd.DataFrame) is False:
+            raise ValueError(
+                "New value of pipeline has to be an object of type Dataframe!"
+            )
         self._df = new_df
 
     @property
     def fitted_pipeline(self):
         return self._fitted_pipeline
 
-
-    def preprocess(
-            self, df: pd.DataFrame
-        ) -> pd.DataFrame:
+    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Preprocesses the input DataFrame by applying a series of transformation steps.
 
@@ -127,19 +139,17 @@ class AutoPrep():
         """
 
         self._df = df.copy()
-        self._df_preprocessed = self.remove_excluded_columns(df = self._df)        
-        self._fitted_pipeline = self.fit_pipeline_structure(df = self._df_preprocessed)
-        self._df_preprocessed =  self._fitted_pipeline.transform(self._df_preprocessed)
+        self._df_preprocessed = self.remove_excluded_columns(df=self._df)
+        self._fitted_pipeline = self.fit_pipeline_structure(df=self._df_preprocessed)
+        self._df_preprocessed = self._fitted_pipeline.transform(self._df_preprocessed)
 
         self._df_preprocessed = self.remove_no_variance_columns(
             df=self._df_preprocessed,
             drop_columns_no_variance=self.drop_columns_no_variance,
-            name="Preprocessed"
+            name="Preprocessed",
         )
 
         return self._df_preprocessed
-
-
 
     def fit_pipeline_structure(self, df):
         """
@@ -147,11 +157,11 @@ class AutoPrep():
         """
         self.pipeline_structure.column_check_input_parameters(df=df)
 
-        df = self.pipeline_structure.pre_pipeline().fit_transform(X = df)
+        df = self.pipeline_structure.pre_pipeline().fit_transform(X=df)
 
         self.pipeline_structure.init_standard_pipeline()
-        self.pipeline_structure.find_categorical_columns(df = df)
-        self.pipeline_structure.manage_numerical_columns(df = df)
+        self.pipeline_structure.find_categorical_columns(df=df)
+        self.pipeline_structure.manage_numerical_columns(df=df)
 
         self._df = df.copy(deep=True)
 
@@ -163,8 +173,7 @@ class AutoPrep():
             raise TypeError("Did you specify datetime columns?") from exc
         except Exception as e:
             raise e
-            
-        
+
     def remove_excluded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Removes specified columns from the dataframe.
@@ -188,15 +197,14 @@ class AutoPrep():
                     print(e)
         return df_modified
 
-
     def remove_no_variance_columns(
-            self, df, drop_columns_no_variance=True, name="Preprocessed"
-        ) -> (pd.DataFrame, pd.DataFrame):
+        self, df, drop_columns_no_variance=True, name="Preprocessed"
+    ) -> (pd.DataFrame, pd.DataFrame):
         """
         Removes columns with no variance from Dataframe.
-        """            
+        """
 
-        df_cols_no_variance = df.loc[:,df.std() == 0.0].columns
+        df_cols_no_variance = df.loc[:, df.std() == 0.0].columns
         print("No Variance in follow Train Columns: ", df_cols_no_variance)
 
         df_cols_only_nans = df.columns[df.isna().any()]
@@ -204,18 +212,19 @@ class AutoPrep():
 
         print(f"Shape {name} before drop: {df.shape}")
 
-
         if drop_columns_no_variance is True:
             df_dropped = df.drop(df_cols_no_variance, axis=1)
 
             print(f"Shape {name} after drop: {df_dropped.shape}\n")
-            print(f"Check NaN {name}: {df_dropped.columns[df_dropped.isna().any()].tolist()}")
-            print(f"Check inf {name}: {df_dropped.columns[np.isinf(df_dropped).any()].tolist()}")
+            print(
+                f"Check NaN {name}: {df_dropped.columns[df_dropped.isna().any()].tolist()}"
+            )
+            print(
+                f"Check inf {name}: {df_dropped.columns[np.isinf(df_dropped).any()].tolist()}"
+            )
             return df_dropped
 
         return df
-
-
 
     def get_profiling(self, df: pd.DataFrame, deeper_profiling=False):
         """
@@ -228,11 +237,13 @@ class AutoPrep():
             profile = ProfileReport(df, title="Profiling Report", explorative=True)
             profile.to_file("DQ_report_deep.html")
 
-    def visualize_pipeline_structure_html(self, filename="./visualization/PipelineStructure"):
+    def visualize_pipeline_structure_html(
+        self, filename="./visualization/PipelineStructure"
+    ):
         """
         Save the pipeline structure as an HTML file.
 
-        This method creates the necessary directories (if they do not already exist) 
+        This method creates the necessary directories (if they do not already exist)
         and saves a visual representation of the pipeline structure to an HTML file.
 
         Parameters

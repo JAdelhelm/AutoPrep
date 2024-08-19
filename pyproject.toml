@@ -26,8 +26,14 @@ dynamic = ["dependencies", "version"]
 version = {attr = "AutoPrep.__version__"}
 dependencies = {file = "requirements.txt"}
 
+
+
 [tool.setuptools]
 packages = ["AutoPrep"]
+
+# [tool.setuptools.packages.find]
+# where = ["AutoPrep"]
+
 
 
 [build-system]
