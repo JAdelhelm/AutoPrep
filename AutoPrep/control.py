@@ -1,19 +1,7 @@
-from sklearn.compose import ColumnTransformer, make_column_selector
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import make_pipeline, Pipeline, FeatureUnion, make_union
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
-from sklearn.impute import SimpleImputer, MissingIndicator
-import pandas as pd
+from sklearn.pipeline import FeatureUnion
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-
 # from graphviz import Digraph
-from category_encoders import BinaryEncoder
 
-
-from sklearn.utils import estimator_html_repr
 
 from AutoPrep.pipeline_configuration import PipelinesConfiguration
 
@@ -26,7 +14,8 @@ class PipelineControl(PipelinesConfiguration):
     Parameters
     ----------
     datetime_columns : list, optional
-        List of column names representing time data that should be converted to timestamp data types. Default is None.
+        List of column names representing time data that should 
+        be converted to timestamp data types. Default is None.
 
     nominal_columns : list, optional
         Columns that should be transformed to nominal data types. Default is None.
@@ -44,7 +33,8 @@ class PipelineControl(PipelinesConfiguration):
     Methods
     -------
     standard_pipeline_configuration()
-        Returns the standard pipeline configuration with profiling, datatypes, and preprocessing steps.
+        Returns the standard pipeline configuration with profiling,
+        datatypes, and preprocessing steps.
 
     pipeline_configuration()
         Returns the complete pipeline configuration based on provided columns and settings.
@@ -60,6 +50,8 @@ class PipelineControl(PipelinesConfiguration):
         n_jobs: int = -1,
         scaler_option_num: str = "standard"
                  ) -> None:
+        self._all_columns = (nominal_columns+ordinal_columns+ 
+                        numerical_columns+datetime_columns)
         super().__init__(
             datetime_columns=datetime_columns,
             nominal_columns=nominal_columns,
@@ -68,27 +60,38 @@ class PipelineControl(PipelinesConfiguration):
             pattern_recognition_columns=pattern_recognition_columns,
             exclude_columns=exclude_columns,
             n_jobs=n_jobs,
-            scaler_option_num=scaler_option_num
+            scaler_option_num=scaler_option_num,
+            all_columns = self._all_columns
         )
-
-
     
     def manage_numerical_columns(self, df):
+        """
+        Manages the list of numerical columns in the given DataFrame.
+
+        If `self.numerical_columns` is not set, this method identifies numerical columns in `df`
+        and excludes any columns explicitly specified as nominal or ordinal.
+        """
         if self.numerical_columns is None:
+            # Select numerical columns from the DataFrame
             self.numerical_columns = df.select_dtypes(include=[np.number]).columns.tolist()
-            try: self.numerical_columns = [col for col in self.numerical_columns if col not in self.nominal_columns]
-            except: pass
-            try: self.numerical_columns = [col for col in self.numerical_columns if col not in self.ordinal_columns]
-            except: pass
+
+            # Exclude columns specified in nominal_columns, if it exists
+            if hasattr(self, 'nominal_columns'):
+                self.numerical_columns = [col for col in self.numerical_columns if col not in self.nominal_columns]
+
+            # Exclude columns specified in ordinal_columns, if it exists
+            if hasattr(self, 'ordinal_columns'):
+                self.numerical_columns = [col for col in self.numerical_columns if col not in self.ordinal_columns]
 
     def pipeline_control(self):
         """
-        Configures and returns a preprocessing pipeline based on the presence of nominal and ordinal columns.
+        Configures and returns a preprocessing pipeline based 
+        on the presence of nominal and ordinal columns.
 
         Constructs a pipeline that applies numerical and time series transformations, with optional 
-        handling for nominal and ordinal columns. If neither nominal nor ordinal columns are specified, 
-        a standard pipeline is returned. Columns not specified as nominal or ordinal will be passed 
-        through a BinaryEncoder in the transformation process.
+        handling for nominal and ordinal columns. If neither nominal nor ordinal columns are
+        specified, a standard pipeline is returned. Columns not specified as nominal or 
+        ordinal will be passed through a BinaryEncoder in the transformation process.
 
         Returns:
             Pipeline or FeatureUnion: The configured pipeline for preprocessing the data.
@@ -104,7 +107,7 @@ class PipelineControl(PipelinesConfiguration):
                     ],
                     n_jobs=self.n_jobs
                 )
-        elif len(self.nominal_columns) == 0 and len(self.ordinal_columns) > 0: 
+        if len(self.nominal_columns) == 0 and len(self.ordinal_columns) > 0: 
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
@@ -114,7 +117,7 @@ class PipelineControl(PipelinesConfiguration):
                     ],
                     n_jobs=self.n_jobs
                 )
-        elif len(self.nominal_columns) > 0 and len(self.ordinal_columns) > 0: 
+        if len(self.nominal_columns) > 0 and len(self.ordinal_columns) > 0: 
             return FeatureUnion(
                     transformer_list=[
                         ("Standard", self.standard_pipeline),
@@ -131,37 +134,30 @@ class PipelineControl(PipelinesConfiguration):
 
     def find_categorical_columns(self, df):
         """
-        Identifies categorical columns in the given DataFrame that have not been explicitly specified.
+        Identifies categorical columns in the given DataFrame that 
+        have not been explicitly specified.
 
-        This method scans the provided DataFrame `df` to determine which columns contain categorical 
-        data types that were not predefined or specified by the user. These identified categorical 
+        This method scans the provided DataFrame `df` to determine 
+        which columns contain categorical data types that were not
+        predefined or specified by the user. These identified categorical 
         columns will be processed separately in an additional transformation step.
         """
         self.categorical_columns = list(df.select_dtypes(include=[object]).columns)
 
-        try: 
-            for col in self.nominal_columns:
-                try:self.categorical_columns.remove(col)
-                except: pass
-        except: pass
-        
-        try:
+        if hasattr(self, 'nominal_columns'):
+            self.categorical_columns = [col for col in self.categorical_columns if col not in self.nominal_columns]
 
-            for col in self.ordinal_columns:
-                try: self.categorical_columns.remove(col)
-                except:pass
-        except: pass
+        if hasattr(self, 'ordinal_columns'):
+            self.categorical_columns = [col for col in self.categorical_columns if col not in self.ordinal_columns]
 
-
-        if len(self.categorical_columns) > 0:
+        if self.categorical_columns:
             self.standard_pipeline = FeatureUnion(
-                    transformer_list=[
-                        ("Standard", self.standard_pipeline),
-                        ("categorical", super().categorical_pipeline() ) 
-                        ],
-                        n_jobs=self.n_jobs)
-
-
+                transformer_list=[
+                    ("Standard", self.standard_pipeline),
+                    ("categorical", super().categorical_pipeline())
+                ],
+                n_jobs=self.n_jobs
+            )
 
     def column_check_input_parameters(self, df):
         """
@@ -192,12 +188,7 @@ class PipelineControl(PipelinesConfiguration):
             raise TypeError("pattern_recognition_columns must be a list")
         if self.exclude_columns is not None and not isinstance(self.exclude_columns, list):
             raise TypeError("exclude_columns must be a list")
-        
-        self._all_columns = (self.nominal_columns + 
-                             self.ordinal_columns + 
-                             self.numerical_columns + 
-                             self.datetime_columns)
-        
+            
         for col in self._all_columns:
             if col not in df.columns:
                 raise KeyError(f"Column '{col}' not found in the dataframe.")

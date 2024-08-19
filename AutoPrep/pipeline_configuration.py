@@ -34,8 +34,6 @@ from AutoPrep.pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferen
 from AutoPrep.pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
 from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
 from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
-from AutoPrep.pipelines.nan_handling.NaNColumnCreator import NaNColumnCreator
-from AutoPrep.pipelines.nan_handling.NaNColumnCreatorTotal import NaNColumnCreatorTotal
 
 class PipelinesConfiguration():
     """
@@ -88,7 +86,8 @@ class PipelinesConfiguration():
         pattern_recognition_columns: list = None,
         exclude_columns: list = None,
         n_jobs: int = -1,
-        scaler_option_num: str = "standard"
+        scaler_option_num: str = "standard",
+        all_columns: list = None,
                  ) -> None:
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
@@ -97,14 +96,15 @@ class PipelinesConfiguration():
         self.pattern_recognition_columns = pattern_recognition_columns
         self.exclude_columns = exclude_columns
         self.n_jobs = n_jobs
-        self.scaler_option_num = scaler_option_num        
+        self.scaler_option_num = scaler_option_num
+        self.all_columns = all_columns        
         self.standard_pipeline = None
         self.categorical_columns = None
 
 
 
-    def pre_pipeline(self):
 
+    def pre_pipeline(self):
         original_preprocessor = Pipeline(
             steps=[
                 (
@@ -250,8 +250,8 @@ class PipelinesConfiguration():
                     ),
                 ]
             )
-        else:
-            return self.numeric_pipeline_2()
+
+        return self.numeric_pipeline_2()
 
 
 
@@ -458,8 +458,7 @@ class PipelinesConfiguration():
                         ),
                     )
                 ]
-            )
-        
+            )        
         else:
             return Pipeline(
                 steps=[
