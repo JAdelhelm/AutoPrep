@@ -38,7 +38,7 @@ data = pd.DataFrame(data)
 ########################################
 
 
-from Autoprep import AutoPrep
+from AutoPrep import AutoPrep
 
 pipeline = AutoPrep(
     nominal_columns=["ID", "Name", "Is Manager"],
