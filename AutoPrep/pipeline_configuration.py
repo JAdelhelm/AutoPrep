@@ -88,6 +88,7 @@ class PipelinesConfiguration():
         n_jobs: int = -1,
         scaler_option_num: str = "standard",
         all_columns: list = None,
+        deactivate_missing_indicator: bool = False
                  ) -> None:
         self.datetime_columns = datetime_columns
         self.nominal_columns = nominal_columns
@@ -97,9 +98,11 @@ class PipelinesConfiguration():
         self.exclude_columns = exclude_columns
         self.n_jobs = n_jobs
         self.scaler_option_num = scaler_option_num
+        self.deactivate_missing_indicator = deactivate_missing_indicator
         self.all_columns = all_columns        
         self.standard_pipeline = None
         self.categorical_columns = None
+
 
 
 
@@ -135,6 +138,8 @@ class PipelinesConfiguration():
         return original_preprocessor
 
     def nan_marker_pipeline(self):
+        if self.deactivate_missing_indicator is True:
+            return 
         nan_marker_preprocessor = Pipeline(
             steps=[
                 (
@@ -189,7 +194,6 @@ class PipelinesConfiguration():
                                             ),
                                         ]
                                     ),
-                                    # make_column_selector(dtype_include=np.number),
                                     self.numerical_columns
                                 ),
                             ],
@@ -233,10 +237,6 @@ class PipelinesConfiguration():
                                                 "_pass_cols_",
                                                 "passthrough",
                                             ),
-                                            # (
-                                            #     "robust_scaler",
-                                            #     RobustScaler(),
-                                            # ),
                                         ]
                                     ),
                                     make_column_selector(dtype_include=np.number),

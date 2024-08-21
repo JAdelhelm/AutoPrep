@@ -79,6 +79,7 @@ class AutoPrep:
         drop_columns_no_variance: bool = True,
         n_jobs: int = -1,
         scaler_option_num="deactivate",
+        deactivate_missing_indicator = False
     ):
         self.datetime_columns = datetime_columns if datetime_columns is not None else []
         self.nominal_columns = nominal_columns if nominal_columns is not None else []
@@ -89,6 +90,7 @@ class AutoPrep:
         self.drop_columns_no_variance = drop_columns_no_variance
         self.n_jobs = n_jobs
         self.scaler_option_num = scaler_option_num.lower()
+        self.deactivate_missing_indicator = deactivate_missing_indicator
 
         self._fitted_pipeline = None
         self._df = None
@@ -148,6 +150,7 @@ class AutoPrep:
             scaler_option_num=self.scaler_option_num,
             pattern_recognition_columns=self.pattern_recognition_columns,
             n_jobs=self.n_jobs,
+            deactivate_missing_indicator=self.deactivate_missing_indicator
         )
 
         self.pipeline_structure.column_check_input_parameters(df=df)
