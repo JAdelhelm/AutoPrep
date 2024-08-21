@@ -48,7 +48,8 @@ class PipelineControl(PipelinesConfiguration):
         pattern_recognition_columns: list = None,
         exclude_columns: list = None,
         n_jobs: int = -1,
-        scaler_option_num: str = "standard"
+        scaler_option_num: str = "standard",
+        deactivate_missing_indicator: bool = False
                  ) -> None:
         self._all_columns = (nominal_columns+ordinal_columns+ 
                         numerical_columns+datetime_columns)
@@ -61,6 +62,7 @@ class PipelineControl(PipelinesConfiguration):
             exclude_columns=exclude_columns,
             n_jobs=n_jobs,
             scaler_option_num=scaler_option_num,
+            deactivate_missing_indicator=deactivate_missing_indicator,
             all_columns = self._all_columns
         )
     
