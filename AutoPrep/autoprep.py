@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import Pipeline
 from sklearn import set_config
 from sklearn.utils import estimator_html_repr
 
@@ -111,25 +112,28 @@ class AutoPrep:
     @property
     def fitted_pipeline(self):
         return self._fitted_pipeline
-
-    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+    
+    def fit(self, df: pd.DataFrame) -> Pipeline:
         """
-        Preprocesses the input DataFrame by applying a series of transformation steps.
-
         This method performs the following steps:
         1. Creates a deep copy of the input DataFrame to avoid altering the original data.
         2. Removes columns specified to be excluded from processing.
         3. Fits a predefined pipeline structure to the preprocessed DataFrame, which may include
         various transformations such as scaling, encoding, or other feature engineering tasks.
-        4. Applies the fitted pipeline to transform the DataFrame.
-        5. Optionally removes columns with no variance (i.e., columns where all values are identical).
         """
-
         self._df = df.copy()
         self._df_preprocessed = self.remove_excluded_columns(df=self._df)
         self._fitted_pipeline = self.fit_pipeline_structure(df=self._df_preprocessed)
-        self._df_preprocessed = self._fitted_pipeline.transform(self._df_preprocessed)
 
+        return self._fitted_pipeline
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        This method performs the following steps:
+        1. Applies the fitted pipeline to transform the DataFrame.
+        2. Optionally removes columns with no variance (i.e., columns where all values are identical).
+        """
+        self._df_preprocessed = self._fitted_pipeline.transform(self._df_preprocessed)
         self._df_preprocessed = self.remove_no_variance_columns(
             df=self._df_preprocessed,
             drop_columns_no_variance=self.drop_columns_no_variance,
@@ -137,6 +141,12 @@ class AutoPrep:
         )
 
         return self._df_preprocessed
+
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        self._fitted_pipeline = self.fit(df=df)
+        return self.transform(self._df)              
+
+
 
     def fit_pipeline_structure(self, df):
         """
@@ -171,20 +181,67 @@ class AutoPrep:
             raise TypeError("Did you specify datetime columns?") from exc
         except Exception as e:
             raise e
+    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Preprocesses the input DataFrame by applying a series of transformation steps.
+
+        This method performs the following steps:
+        1. Creates a deep copy of the input DataFrame to avoid altering the original data.
+        2. Removes columns specified to be excluded from processing.
+        3. Fits a predefined pipeline structure to the preprocessed DataFrame, which may include
+        various transformations such as scaling, encoding, or other feature engineering tasks.
+        4. Applies the fitted pipeline to transform the DataFrame.
+        5. Optionally removes columns with no variance (i.e., columns where all values are identical).
+        """
+
+        self._df = df.copy()
+        self._df_preprocessed = self.remove_excluded_columns(df=self._df)
+        self._fitted_pipeline = self.fit_pipeline_structure(df=self._df_preprocessed)
+        self._df_preprocessed = self._fitted_pipeline.transform(self._df_preprocessed)
+
+        self._df_preprocessed = self.remove_no_variance_columns(
+            df=self._df_preprocessed,
+            drop_columns_no_variance=self.drop_columns_no_variance,
+            name="Preprocessed",
+        )
+
+        return self._df_preprocessed
+    
+    def find_anomalies(self, df: pd.DataFrame, model="IForest") -> pd.DataFrame:
+        self._df_preprocessed = self.fit_transform(df)
+
+        self._clf_anomalies = self.get_model(model_name=model.lower()) 
+        try:
+            self._clf_anomalie_scores = self._clf_anomalies.fit_predict(self._df_preprocessed)
+        except Exception as e:
+            raise e("Fitting of model failed")
+
+        self._df["AnomalyScore"] = self._clf_anomalie_scores
+
+        return self._df
+
+
+    def get_model(self,model_name):
+        from pyod.models.lof import LOF
+        from pyod.models.cblof import CBLOF
+        from pyod.models.iforest import IForest
+        dir_models =  \
+        {   
+            "iforest" :  IForest(),
+            "lof" : LOF(),
+            "cblof" : CBLOF()
+
+        }
+
+        return dir_models[model_name]
+
+
+
+
 
     def remove_excluded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Removes specified columns from the dataframe.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            The input dataframe.
-
-        Returns
-        -------
-        pd.DataFrame
-            The dataframe with specified columns removed.
+        Removes specified columns from the DataFrame.
         """
         df_modified = df.copy()
         if self.exclude_columns is not None:
@@ -199,7 +256,7 @@ class AutoPrep:
         self, df, drop_columns_no_variance=True, name="Preprocessed"
     ) -> (pd.DataFrame, pd.DataFrame):
         """
-        Removes columns with no variance from Dataframe.
+        Removes columns with no variance from DataFrame.
         """
 
         df_cols_no_variance = df.loc[:, df.std() == 0.0].columns
