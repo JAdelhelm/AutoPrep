@@ -24,44 +24,45 @@ pip install AutoPrep
 To utilize this pipeline, you need to import the necessary libraries and initialize the AutoPrep pipeline. Here is a basic example:
 
 ````python
-############## dummy data #############
 import pandas as pd
+import numpy as np
+import sys
+sys.path.append("../")
+sys.path.append("./")
+
 data = {
+
     'ID': [1, 2, 3, 4],                 
-    'Name': ['Alice', 'Bob', 'Charlie', 'R2D2'],  
-    'Age': [25, 30, 35, 90],                 
+    'Name': ['Alice', 'Bob', 'Charlie', 42],  
+    'Rank': ['A','B','C','D'],
+    'Age': [25, 30, 35, np.nan],                 
     'Salary': [50000.00, 60000.50, 75000.75, 80000.00], 
     'Hire Date': pd.to_datetime(['2020-01-15', '2019-05-22', '2018-08-30', '2021-04-12']), 
-    'Is Manager': [False, True, False, True]  
+    'Is Manager': [False, True, False, ""]  
 }
 data = pd.DataFrame(data)
-########################################
-
-
-from Autoprep import AutoPrep
-
-pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager"],
-    datetime_columns=["Hire Date"],
-    pattern_recognition_columns=["Name"]
-
-)
-X_output = pipeline.preprocess(df=data)
-
-# pipeline.get_profiling(X=data)
-# pipeline.visualize_pipeline_structure_html()
 ````
 
-The resulting output dataframe can be accessed by using:
-
 ````python
-X_output
+from AutoPrep.autoprep import AutoPrep
 
-> Output:
-    col_1  col_2  ...   col_n
-1   data   ...    ...   data   
-2   data   ...    ...   data  
-... ...    ...    ...   ...   
+pipeline = AutoPrep(
+    nominal_columns=["ID", "Name", "Is Manager", "Age"],
+    datetime_columns=["Hire Date"],
+    pattern_recognition_columns=["Name"],
+    scaler_option_num="standard",
+    deactivate_missing_indicator=True
+)
+#### Automated Preprocessing of data
+X_output_preprocessed = pipeline.preprocess(df=data)
+
+#### Automated Preprocessing + Anomalies in data with pyod library
+X_output_anomalies = pipeline.find_anomalies(df=data)
+
+
+#### Profiling of DataFrame / Visualization of pipeline structure
+# pipeline.get_profiling(X=data)
+# pipeline.visualize_pipeline_structure_html()
 ````
 
 ## Highlights ⭐
