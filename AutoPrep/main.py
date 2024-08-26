@@ -43,3 +43,4 @@ X_output = pipeline.find_anomalies(df=data)
 
 # pipeline.get_profiling(X=data)
 pipeline.visualize_pipeline_structure_html()
+# %%

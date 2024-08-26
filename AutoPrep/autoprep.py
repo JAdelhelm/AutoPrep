@@ -7,6 +7,7 @@ ensuring that the input dataset is prepared for downstream machine learning task
 """
 from AutoPrep.control import PipelineControl
 from pathlib import Path
+from sklearn.preprocessing import MinMaxScaler
 
 import numpy as np
 import pandas as pd
@@ -207,18 +208,26 @@ class AutoPrep:
 
         return self._df_preprocessed
     
-    def find_anomalies(self, df: pd.DataFrame, model="IForest") -> pd.DataFrame:
-        self._df_preprocessed = self.fit_transform(df)
-
+    def find_anomalies(self, df: pd.DataFrame, model="IForest", threshold=0.1) -> pd.DataFrame:
         self._clf_anomalies = self.get_model(model_name=model.lower()) 
+
+        self._df_preprocessed = self.fit_transform(df)
+        
         try:
-            self._clf_anomalie_scores = self._clf_anomalies.fit_predict(self._df_preprocessed)
+            clf_fitted = self._clf_anomalies.fit(self._df_preprocessed)
+            self._clf_anomaly_score = clf_fitted.decision_function(self._df_preprocessed)
         except Exception as e:
             raise e("Fitting of model failed")
+        
+        scaler = MinMaxScaler()
+        self._clf_anomaly_score = scaler.fit_transform(self._clf_anomaly_score.reshape(-1,1))
+        threshold_AD = np.percentile(self._clf_anomaly_score, 100 * (1 - threshold))
+        threshold_AD_arr = (self._clf_anomaly_score > threshold_AD).astype(int)
 
-        self._df["AnomalyScore"] = self._clf_anomalie_scores
+        self._df["AnomalyLabel"] = threshold_AD_arr
+        self._df["AnomalyScore"] = self._clf_anomaly_score
 
-        return self._df
+        return self._df.sort_values("AnomalyScore", ascending=False)
 
 
     def get_model(self,model_name):
