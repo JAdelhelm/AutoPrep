@@ -42,7 +42,7 @@ data = {
 }
 data = pd.DataFrame(data)
 ````
-
+````python
 from AutoPrep import AutoPrep
 
 
