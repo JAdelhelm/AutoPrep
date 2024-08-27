@@ -1,5 +1,5 @@
 # AutoPrep -  Automated Preprocessing Pipeline with Univariate Anomaly Indicators
-![PyPIv](https://img.shields.io/pypi/v/AutoPrep)
+[![PyPIv](https://img.shields.io/pypi/v/AutoPrep)](https://pypi.org/project/AutoPrep/)
 ![PyPI status](https://img.shields.io/pypi/status/AutoPrep)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/AutoPrep) ![PyPI - License](https://img.shields.io/pypi/l/AutoPrep)
 <!-- [![Downloads](https://static.pepy.tech/badge/AutoPrep)](https://pepy.tech/project/AutoPrep) -->
