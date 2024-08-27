@@ -57,7 +57,7 @@ pipeline = AutoPrep(
 X_output_preprocessed = pipeline.fit_transform(df=data)
 
 #### Automated Preprocessing + Anomalies in data with pyod library
-X_output_anomalies = pipeline.find_anomalies(df=data)
+# X_output_anomalies = pipeline.find_anomalies(df=data, model="iforest")
 
 
 #### Profiling of DataFrame / Visualization of pipeline structure
