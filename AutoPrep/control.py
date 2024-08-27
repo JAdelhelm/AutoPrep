@@ -100,38 +100,50 @@ class PipelineControl(PipelinesConfiguration):
         """               
 
         if len(self.nominal_columns) > 0 and len(self.ordinal_columns) == 0: 
+            pipeline_list = [
+                ("Standard", self.standard_pipeline),
+                ("Nominal", super().nominal_pipeline()),
+                ("NaN", super().nan_marker_pipeline()),
+                ("PatternExtraction", super().pattern_extraction())
+            ]
+            pipeline_list = [(name, pipe) for name, pipe in pipeline_list if pipe is not None]
+
             return FeatureUnion(
-                    transformer_list=[
-                        ("Standard", self.standard_pipeline),
-                        ("Nominal", super().nominal_pipeline()),
-                        ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction())
-                    ],
-                    n_jobs=self.n_jobs
-                )
+                transformer_list=pipeline_list,
+                n_jobs=self.n_jobs
+            )
+
         if len(self.nominal_columns) == 0 and len(self.ordinal_columns) > 0: 
+            pipeline_list = [
+                ("Standard", self.standard_pipeline),
+                ("Ordinal", super().ordinal_pipeline()),
+                ("NaN", super().nan_marker_pipeline()),
+                ("PatternExtraction", super().pattern_extraction())
+            ]
+            pipeline_list = [(name, pipe) for name, pipe in pipeline_list if pipe is not None]
+
             return FeatureUnion(
-                    transformer_list=[
-                        ("Standard", self.standard_pipeline),
-                        ("Ordinal", super().ordinal_pipeline()),
-                        ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction())
-                    ],
-                    n_jobs=self.n_jobs
-                )
+                transformer_list=pipeline_list,
+                n_jobs=self.n_jobs
+            )
+
         if len(self.nominal_columns) > 0 and len(self.ordinal_columns) > 0: 
+            pipeline_list = [
+                ("Standard", self.standard_pipeline),
+                ("Nominal", super().nominal_pipeline()),
+                ("Ordinal", super().ordinal_pipeline()),
+                ("NaN", super().nan_marker_pipeline()),
+                ("PatternExtraction", super().pattern_extraction())
+            ]
+            pipeline_list = [(name, pipe) for name, pipe in pipeline_list if pipe is not None]
+
             return FeatureUnion(
-                    transformer_list=[
-                        ("Standard", self.standard_pipeline),
-                        ("Nominal", super().nominal_pipeline()),
-                        ("Ordinal", super().ordinal_pipeline()),
-                        ("NaN", super().nan_marker_pipeline()),
-                        ("PatternExtraction", super().pattern_extraction())
-                    ],
-                    n_jobs=self.n_jobs
-                )
-            
+                transformer_list=pipeline_list,
+                n_jobs=self.n_jobs
+            )
+
         return self.standard_pipeline
+
 
 
     def find_categorical_columns(self, df):
