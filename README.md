@@ -54,7 +54,7 @@ pipeline = AutoPrep(
     deactivate_missing_indicator=True
 )
 #### Automated Preprocessing of data
-X_output_preprocessed = pipeline.preprocess(df=data)
+X_output_preprocessed = pipeline.fit_transform(df=data)
 
 #### Automated Preprocessing + Anomalies in data with pyod library
 X_output_anomalies = pipeline.find_anomalies(df=data)
