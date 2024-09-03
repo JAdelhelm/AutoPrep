@@ -7,7 +7,12 @@
 
 
 This pipeline focuses on data preprocessing, standardization, and cleaning, with additional features to identify univariate anomalies.
+
 <a href="https://html-preview.github.io/?url=https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/visualization/PipelineStructure.html" target="_blank">Structure of Preprocessing Pipeline</a>
+
+- I used sklearn's Pipeline and Transformer concept to create this preprocessing pipeline
+    - Pipeline: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
+    - Transformer: https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.html
 
 
 ```python
@@ -112,11 +117,6 @@ Both methods (MOD Z-Value and Tukey Method) are resilient against outliers, ensu
 ### Reference
 - https://www.researchgate.net/publication/379640146_Detektion_von_Anomalien_in_der_Datenqualitatskontrolle_mittels_unuberwachter_Ansatze (German Thesis)
 
-### Further Information
-
-- I used sklearn's Pipeline and Transformer concept to create this preprocessing pipeline
-    - Pipeline: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
-    - Transformer: https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.html
 
 
 
