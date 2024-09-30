@@ -8,8 +8,6 @@
 
 This pipeline focuses on data preprocessing, standardization, and cleaning, with additional features to identify univariate anomalies.
 
-<a href="https://html-preview.github.io/?url=https://raw.githubusercontent.com/JAdelhelm/AutoPrep/main/visualization/PipelineStructure.html" target="_blank">Structure of Preprocessing Pipeline</a>
-
 - I used sklearn's Pipeline and Transformer concept to create this preprocessing pipeline
     - Pipeline: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
     - Transformer: https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.html
@@ -22,7 +20,7 @@ pip install AutoPrep
 - scikit-learn
 - category_encoders
 - bitstring
-- ydata_profiling
+
 
 
 ## Basic Usage
@@ -31,43 +29,38 @@ To utilize this pipeline, you need to import the necessary libraries and initial
 ````python
 import pandas as pd
 import numpy as np
-import sys
-sys.path.append("../")
-sys.path.append("./")
 
-data = {
+X_train = pd.DataFrame({
 
     'ID': [1, 2, 3, 4],                 
-    'Name': ['Alice', 'Bob', 'Charlie', 42],  
+    'Name': ['Alice', 'Alice', 'Alice', "Alice"],  
     'Rank': ['A','B','C','D'],
-    'Age': [25, 30, 35, np.nan],                 
-    'Salary': [50000.00, 60000.50, 75000.75, 80000.00], 
+    'Age': [25, 30, 35, 40],                 
+    'Salary': [50000.00, 60000.50, 75000.75, 8_000], 
     'Hire Date': pd.to_datetime(['2020-01-15', '2019-05-22', '2018-08-30', '2021-04-12']), 
     'Is Manager': [False, True, False, ""]  
-}
-data = pd.DataFrame(data)
-````
-````python
+})
+X_test = pd.DataFrame({
+
+    'ID': [1, 2, 3, 4],                 
+    'Name': ['Alice', 'Alice', 'Alice', "Bob"],  
+    'Rank': ['A','B','C','D'],
+    'Age': [25, 30, 35, np.nan],                 
+    'Salary': [50000.00, 60000.50, 75000.75, 8_000_000], 
+    'Hire Date': pd.to_datetime(['2020-01-15', '2019-05-22', '2018-08-30', '2021-04-12']), 
+    'Is Manager': [False, True, False, ""]  
+})
+
+
+########################################
 from AutoPrep import AutoPrep
 
+pipeline = AutoPrep(remove_columns_no_variance=False)
 
-pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager", "Age"],
-    datetime_columns=["Hire Date"],
-    pattern_recognition_columns=["Name"],
-    scaler_option_num="standard",
-    deactivate_missing_indicator=True
-)
-#### Automated Preprocessing of data
-X_output_preprocessed = pipeline.fit_transform(df=data)
+pipeline.fit(X=X_train)
+X_output = pipeline.transform(X=X_test)
 
-#### Automated Preprocessing + Anomalies in data with pyod library
-# X_output_anomalies = pipeline.find_anomalies(df=data, model="iforest")
-
-
-#### Profiling of DataFrame / Visualization of pipeline structure
-# pipeline.get_profiling(X=data)
-# pipeline.visualize_pipeline_structure_html()
+X_output
 ````
 
 ## Highlights ⭐
@@ -110,9 +103,6 @@ Both methods (MOD Z-Value and Tukey Method) are resilient against outliers, ensu
 
 ---
 
----
-
-## Feel free to contribute 🙂
 
 ### Reference
 - https://www.researchgate.net/publication/379640146_Detektion_von_Anomalien_in_der_Datenqualitatskontrolle_mittels_unuberwachter_Ansatze (German Thesis)

@@ -48,12 +48,10 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
     def __init__(
         self, 
         datetime_columns=None, 
-        exclude_columns: list = None, 
-        numerical_columns: list = None,
+        numerical_columns = None,
         name_transformer=""
     ):
         self.datetime_columns = datetime_columns
-        self.exclude_columns = exclude_columns
         self.numerical_columns = numerical_columns
         self.name_transformer = name_transformer
 
@@ -75,6 +73,7 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
     def infer_schema_X(self, X_copy):
         try:
             X_copy = X_copy.infer_objects()
+            # print(f"HEEERE: {X_copy}")
         except:
             pass
 
@@ -119,15 +118,7 @@ class TypeInferenceTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X) -> pd.DataFrame:
-        
-        if self.exclude_columns is not None:
-            for col in self.exclude_columns:
-                try:
-                    X.drop([col], axis=1, inplace=True)
-                except:
-                    print(f"Column {col} could not be dropped.")
-
+    def transform(self, X) -> pd.DataFrame:        
         self.feature_names = X.columns
 
         X_copy = X.copy()

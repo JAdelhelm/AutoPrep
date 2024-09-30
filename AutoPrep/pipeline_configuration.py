@@ -21,19 +21,7 @@ from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import  OrdinalEncoder, RobustScaler, StandardScaler, MinMaxScaler
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer, KNNImputer
-from category_encoders import BinaryEncoder
-from AutoPrep.pipelines.statistical.TukeyTransformer import TukeyTransformer
-from AutoPrep.pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
-from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
-from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
-from AutoPrep.pipelines.statistical.SpearmanCheck import SpearmanCorrelationCheck
-from AutoPrep.pipelines.engineering.BinaryPatternTransformer import BinaryPatternTransformer
-from AutoPrep.pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
-from AutoPrep.pipelines.dummy.TypeInferenceTransformerNominal import TypeInferenceTransformerNominal
-from AutoPrep.pipelines.dummy.TypeInferenceTransformerOrdinal import TypeInferenceTransformerOrdinal
-from AutoPrep.pipelines.dummy.TypeInferenceTransformerPattern import TypeInferenceTransformerPattern
-from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
-from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
+
 
 class PipelinesConfiguration():
     """
@@ -60,54 +48,20 @@ class PipelinesConfiguration():
     timeseries_pipeline():
         Creates a pipeline for preprocessing timeseries data.
 
-    pattern_extraction(pattern_recognition_columns=None, 
-    datetime_columns_pattern=None, deactivate_pattern_recognition=False):
-        Creates a pipeline to extract patterns from categorical data.
-
-    nominal_pipeline(nominal_columns=None, datetime_columns=None):
-        Creates a pipeline for separate preprocessing of nominal data.
-
-    ordinal_pipeline(ordinal_columns=None, datetime_columns=None):
-        Creates a pipeline for separate preprocessing of ordinal data.
 
     Parameters
     ----------
     datetime_columns : list
         List of Time-Columns that should be converted to timestamp data types.
 
-    exclude_columns : list
+    numerical_columns : list
         List of columns that should be dropped.
     """
-    def __init__(self,
-        datetime_columns: list = None,
-        nominal_columns: list = None,
-        ordinal_columns: list = None,
-        numerical_columns: list = None,
-        pattern_recognition_columns: list = None,
-        exclude_columns: list = None,
-        n_jobs: int = -1,
-        scaler_option_num: str = "standard",
-        all_columns: list = None,
-        deactivate_missing_indicator: bool = False
-                 ) -> None:
-        self.datetime_columns = datetime_columns
-        self.nominal_columns = nominal_columns
-        self.ordinal_columns = ordinal_columns
-        self.numerical_columns = numerical_columns
-        self.pattern_recognition_columns = pattern_recognition_columns
-        self.exclude_columns = exclude_columns
-        self.n_jobs = n_jobs
-        self.scaler_option_num = scaler_option_num
-        self.deactivate_missing_indicator = deactivate_missing_indicator
-        self.all_columns = all_columns        
-        self.standard_pipeline = None
-        self.categorical_columns = None
 
+    @staticmethod
+    def pre_pipeline(datetime_columns, numerical_columns):
+        from AutoPrep.pipelines.dummy.TypeInferenceTransformer import TypeInferenceTransformer
 
-
-
-
-    def pre_pipeline(self):
         original_preprocessor = Pipeline(
             steps=[
                 (
@@ -116,12 +70,7 @@ class PipelinesConfiguration():
                         transformers=[
                             (
                                 "Standard TypeCast Transformer",
-                                TypeInferenceTransformer(
-                                    datetime_columns=self.datetime_columns,
-                                    exclude_columns=self.exclude_columns,
-                                    numerical_columns = self.numerical_columns,
-                                    name_transformer="Schema Standard Pipeline",
-                                ),
+                                TypeInferenceTransformer(datetime_columns=datetime_columns, numerical_columns=numerical_columns),
                                 make_column_selector(dtype_include=None),
                             )
                         ],
@@ -137,9 +86,9 @@ class PipelinesConfiguration():
 
         return original_preprocessor
 
-    def nan_marker_pipeline(self):
-        if self.deactivate_missing_indicator is True:
-            return 
+    @staticmethod
+    def nan_marker_pipeline():
+        from sklearn.impute import  MissingIndicator
         nan_marker_preprocessor = Pipeline(
             steps=[
                 (
@@ -150,19 +99,11 @@ class PipelinesConfiguration():
                                 "nan_marker_columns",
                                 Pipeline(
                                     steps=[
-                                        (
-                                            "X_nan",
-                                            TypeInferenceTransformer(
-                                                numerical_columns = self.numerical_columns,
-                                                datetime_columns=self.datetime_columns,
-                                                name_transformer="Schema NaNMarker",
-                                            ),
-                                        ),
                                         ("nan_marker", MissingIndicator(features="all"))
 
                                     ]
                                 ),
-                                make_column_selector(dtype_include=None),
+                                make_column_selector(dtype_include=(np.number, np.object_)),
                             ),
                         ],
                         remainder="passthrough",
@@ -176,122 +117,14 @@ class PipelinesConfiguration():
 
         return nan_marker_preprocessor
 
-    def numeric_pipeline(self):
-        if self.scaler_option_num == "deactivate":
-            return  Pipeline(
-                steps=[
-                    (
-                        "Preprocessing_Numerical",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "numeric",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "N",
-                                                SimpleImputer(strategy="median", keep_empty_features=True),
-                                            ),
-                                        ]
-                                    ),
-                                    self.numerical_columns
-                                ),
-                            ],
-                            remainder="passthrough",
-                            n_jobs=-1,
-                            verbose=True,
-                            verbose_feature_names_out=False
-                        ),
-                    ),
-                    (
-                        "Statistical methods",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "tukey",
-                                    Pipeline(
-                                        steps=[
-                                            ("Tukey_impute", IterativeImputer(initial_strategy="median")),
-                                            ("tukey", TukeyTransformer(factor=1.5)),
-                                            ("tukey_total", TukeyTransformerTotal())
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
-                                ),
-                                (
-                                    "z_mod",
-                                    Pipeline(
-                                        steps=[
-                                            ("z_mod_impute", IterativeImputer(initial_strategy="median")),
-                                            ("z_mod", MedianAbsolutDeviation()),
-                                            ("z_mod_total", MedianAbsolutDeviationTotal())
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
-                                ),
-                                (
-                                    "pass_cols",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "_pass_cols_",
-                                                "passthrough",
-                                            ),
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.number),
-                                ),
-                            ],
-                            remainder="passthrough",
-                            n_jobs=-1,
-                            verbose=True,
-                            verbose_feature_names_out=False
-                        ),
-                    ),
-                ]
-            )
-
-        return self.numeric_pipeline_2()
-
-
-
-    def numeric_pipeline_2(self):
-        self.scaler_pick = StandardScaler()
-
-        if self.scaler_option_num == "standard": self.scaler_pick = StandardScaler()
-        elif self.scaler_option_num == "robust": self.scaler_pick = RobustScaler()
-        elif self.scaler_option_num == "minmax": self.scaler_pick = MinMaxScaler()
-
-        if self.scaler_option_num not in ["standard", "robust", "minmax"]:
-            raise ValueError("No valid scaler option picked!")
-
-
+    @staticmethod
+    def numeric_pipeline():
+        from AutoPrep.pipelines.statistical.TukeyTransformer import TukeyTransformer
+        from AutoPrep.pipelines.statistical.TukeyTransformerTotal import TukeyTransformerTotal
+        from AutoPrep.pipelines.statistical.MedianAbsolutDeviation import MedianAbsolutDeviation
+        from AutoPrep.pipelines.statistical.MedianAbsolutDeviationTotal import MedianAbsolutDeviationTotal
         return  Pipeline(
             steps=[
-                (
-                    "Preprocessing_Numerical",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "numeric",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "N",
-                                            SimpleImputer(strategy="median", keep_empty_features=True),
-                                        ),
-
-                                    ]
-                                ),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                        ],
-                        remainder="passthrough",
-                        n_jobs=-1,
-                        verbose=True,
-                        verbose_feature_names_out=False
-                    ),
-                ),
                 (
                     "Statistical methods",
                     ColumnTransformer(
@@ -323,20 +156,16 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
+                                            
                                             "_pass_cols_",
-                                            "passthrough",
-                                        ),
-                                        (
-                                            "scaler",
-                                            # RobustScaler(),
-                                            self.scaler_pick
+                                            SimpleImputer(strategy="median", keep_empty_features=True)
                                         ),
                                     ]
                                 ),
                                 make_column_selector(dtype_include=np.number),
                             ),
                         ],
-                        remainder="passthrough",
+                        remainder="drop",
                         n_jobs=-1,
                         verbose=True,
                         verbose_feature_names_out=False
@@ -346,13 +175,9 @@ class PipelinesConfiguration():
         )
 
 
-
-
-
-
-
-
-    def categorical_pipeline(self):
+    @staticmethod
+    def categorical_pipeline():
+        from category_encoders import BinaryEncoder
         return Pipeline(
             steps=[
                 (
@@ -364,13 +189,6 @@ class PipelinesConfiguration():
                                 Pipeline(
                                     steps=[
                                         (
-                                        "Categorical",
-                                            TypeInferenceTransformerNominal(
-                                                datetime_columns=self.datetime_columns,
-                                                name_transformer="Inference Categorical",
-                                            ),
-                                        ),
-                                        (
                                             "C",
                                             SimpleImputer(strategy="most_frequent", keep_empty_features=True),
                                         ),
@@ -380,8 +198,7 @@ class PipelinesConfiguration():
                                         ),
                                     ]
                                 ),
-                                self.categorical_columns
-                                # make_column_selector(dtype_include=np.object_),
+                                make_column_selector(dtype_include=np.object_),
                             ),
                         ],
                         remainder="drop",
@@ -392,7 +209,13 @@ class PipelinesConfiguration():
             ]
         )
 
-    def timeseries_pipeline(self):
+    @staticmethod
+    def timeseries_pipeline():
+        """
+        Open Task: Add MissingIndicator to TimeSeries
+        """
+        from AutoPrep.pipelines.timeseries.DateEncoder import DateEncoder
+        from AutoPrep.pipelines.timeseries.TimeSeriesImputer import TimeSeriesImputer
         timeseries_preprocessor = Pipeline(
             steps=[
                 (
@@ -429,211 +252,3 @@ class PipelinesConfiguration():
         )
 
         return timeseries_preprocessor
-
-    def pattern_extraction(
-        self
-    ):
-        if self.pattern_recognition_columns is None:
-            return  Pipeline(
-                steps=[
-                    (
-                        "PatternRecognition Deactivated",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "drop_columns",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "DropColumns", XPatternDropper(),
-                                            ),
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=None),
-                                ),
-                            ],
-                            remainder="drop",
-                            n_jobs=-1,
-                            verbose=True,
-                        ),
-                    )
-                ]
-            )        
-        else:
-            return Pipeline(
-                steps=[
-                    (
-                        "X_pattern",
-                        TypeInferenceTransformerPattern(
-                            include_columns=self.pattern_recognition_columns,
-                            datetime_columns=self.datetime_columns,
-                            name_transformer="Schema PatternExtraction",
-                        ),
-                    ),
-                    (
-                        "pattern_processing",
-                        ColumnTransformer(
-                            transformers=[
-                                (
-                                    "pattern",
-                                    Pipeline(
-                                        steps=[
-                                            (
-                                                "impute_pattern",
-                                                SimpleImputer(strategy="most_frequent", keep_empty_features=True),
-                                            ),
-                                            (
-                                                "pattern_extraction",
-                                                BinaryPatternTransformer(),
-                                            ),
-                                            (
-                                                "BinaryEnc",
-                                                BinaryEncoder(
-                                                    handle_unknown="indicator"
-                                                ),
-                                            ),
-                                        ]
-                                    ),
-                                    make_column_selector(dtype_include=np.object_),
-                                )
-                            ],
-                            remainder="drop",
-                        ),
-                    ),
-                ]
-            )
-
-
-
-    def nominal_pipeline(
-        self):
-        return Pipeline(
-            steps=[
-                (
-                    "nominal_preprocessing",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "nominal",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "Nominal Caster", 
-                                            TypeInferenceTransformerNominal(
-                                                datetime_columns=self.datetime_columns,
-                                                exclude_columns=self.exclude_columns,
-                                                nominal_columns=self.nominal_columns
-                                            )
-                                        ),
-                                        (
-                                            "impute_nominal",
-                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
-                                        ),                                        
-                                        (
-                                            "BinaryEnc",
-                                            BinaryEncoder(handle_unknown="indicator"),
-                                        ),
-                                    ]
-                                ),
-                                self.nominal_columns
-                            )
-                        ],
-                        remainder="drop",  
-                        n_jobs=-1,
-                        verbose=True,
-                        # verbose_feature_names_out=False 
-                    ),
-                ),
-            ]
-        )
-
-    def ordinal_pipeline(
-        self    ):
-        
-        return Pipeline(
-            steps=[
-                (
-                    "ordinal_preprocessing",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "ordinal",
-                                Pipeline(
-                                    steps=[
-                                        (
-                                            "Ordinal Caster", 
-                                            TypeInferenceTransformerOrdinal(
-                                                datetime_columns=self.datetime_columns,
-                                                exclude_columns = self.exclude_columns,
-                                                ordinal_columns=self.ordinal_columns
-                                            )
-                                        ),
-                                        (
-                                            "impute_ordinal",
-                                            SimpleImputer(strategy="most_frequent", keep_empty_features=True),
-                                        ),
-                                        (
-                                            "OrdinalEnc",
-                                            OrdinalEncoder(
-                                                handle_unknown="use_encoded_value",
-                                                unknown_value=-1,
-                                            ),
-                                        ),
-                                    ]
-                                ),
-                                # make_column_selector(dtype_include=None)
-                                self.ordinal_columns
-                            )
-                        ],
-                        remainder="drop",
-                    ),
-                ),
-                # (
-                #     "SpearmanCorrelationCheck",
-                #     SpearmanCorrelationCheck(),
-                # ),
-            ]
-        )
-    
-    def init_standard_pipeline(self): 
-        self.standard_pipeline =  Pipeline(
-            steps=[
-                (
-                    "Standard Preprocessing",
-                    ColumnTransformer(
-                        transformers=[
-                            (
-                                "numerical",
-                                self.numeric_pipeline(),
-                                make_column_selector(dtype_include=np.number),
-                            ),
-                            (
-                                "date",
-                                self.timeseries_pipeline(),
-                                make_column_selector(
-                                    dtype_include=(
-                                        np.dtype("datetime64[ns]"),
-                                        np.datetime64,
-                                        "datetimetz",
-                                    )
-                                ),
-                            ),
-                            
-                        ],
-                        remainder="drop",
-                        n_jobs=self.n_jobs,
-                        verbose=True,
-                    ),
-                ),
-                
-            ]
-        )    
-class XPatternDropper():
-    def __init__(self):
-        pass
-
-    def fit(self, df, y=None):
-        return self
-
-    def transform(self, df, y=None):
-        return df[[]]

@@ -4,37 +4,32 @@
 import pandas as pd
 import numpy as np
 
-data = {
+X_train = pd.DataFrame({
 
     'ID': [1, 2, 3, 4],                 
-    'Name': ['Alice', 'Bob', 'Charlie', 42],  
+    'Name': ['Alice', 'Alice', 'Alice', "Alice"],  
     'Rank': ['A','B','C','D'],
-    'Age': [25, 30, 35, np.nan],                 
-    'Salary': [50000.00, 60000.50, 75000.75, 80000.00], 
+    'Age': [25, 30, 35, 40],                 
+    'Salary': [50000.00, 60000.50, 75000.75, 8_000], 
     'Hire Date': pd.to_datetime(['2020-01-15', '2019-05-22', '2018-08-30', '2021-04-12']), 
     'Is Manager': [False, True, False, ""]  
-}
-data = pd.DataFrame(data)
+})
+X_test = pd.DataFrame({
+
+    'ID': [1, 2, 3, 4],                 
+    'Name': ['Alice', 'Alice', 'Alice', "Bob"],  
+    'Rank': ['A','B','C','D'],
+    'Age': [25, 30, 35, np.nan],                 
+    'Salary': [50000.00, 60000.50, 75000.75, 8_000_000], 
+    'Hire Date': pd.to_datetime(['2020-01-15', '2019-05-22', '2018-08-30', '2021-04-12']), 
+    'Is Manager': [False, True, False, ""]  
+})
+
+
 ########################################
-import sys
-sys.path.append("../")
-sys.path.append("./")
+from autoprep import AutoPrep
 
-from AutoPrep.autoprep import AutoPrep
+pipeline = AutoPrep(remove_columns_no_variance=False)
 
-pipeline = AutoPrep(
-    nominal_columns=["ID", "Name", "Is Manager", "Age"],
-    datetime_columns=["Hire Date"],
-    pattern_recognition_columns=["Name"],
-    scaler_option_num="standard",
-    deactivate_missing_indicator=True
-)
-# Automated Preprocessing of data
-# X_output = pipeline.preprocess(df=data)
-
-# Automated Preprocessing + Anomalies in data with pyod library
-# X_output = pipeline.find_anomalies(df=data)
-
-# pipeline.get_profiling(X=data)
-pipeline.visualize_pipeline_structure_html()
-# %%
+pipeline.fit(X=X_train)
+pipeline.transform(X=X_test)
