@@ -48,7 +48,7 @@ class AutoPrep():
 
     @PipelineDecorator.check_no_variance
     @PipelineDecorator.preprocess_data_for_pipeline
-    def fit(self, X: ndarray | pd.DataFrame | Any, y= None | ndarray | pd.DataFrame | Any, **fit_params):
+    def fit(self, X: ndarray | pd.DataFrame | Any, y = None | ndarray | pd.DataFrame | Any, **fit_params):
         self.X_fit = X
 
         self.auto_pipeline = self.create_pipeline()
@@ -56,7 +56,7 @@ class AutoPrep():
 
 
     @PipelineDecorator.check_no_variance
-    def transform(self, X: ndarray | pd.DataFrame | Any, y= None | ndarray | pd.DataFrame | Any, **fit_params):
+    def transform(self, X: ndarray | pd.DataFrame | Any, y = None | ndarray | pd.DataFrame | Any, **fit_params):
         self.X_transformed = X
         if list(self.X_fit.columns) != list(X.columns):
             raise Exception(f"Column names must be identical!\n\n{self.X_fit.columns}\n{X.columns}")
@@ -64,7 +64,7 @@ class AutoPrep():
         return self.auto_pipeline_fitted.transform(X=self.X_transformed)
 
 
-    def fit_transform(self, X: ndarray | pd.DataFrame | Any, y: None | ndarray | pd.DataFrame | Any = None, **fit_params) -> ndarray:
+    def fit_transform(self, X: ndarray | pd.DataFrame | Any, y = None | ndarray | pd.DataFrame | Any, **fit_params) -> ndarray:
         self.auto_pipeline = self.create_pipeline()
 
         return self.auto_pipeline.fit(X=X).transform(X=X)
